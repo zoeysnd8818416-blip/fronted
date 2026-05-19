@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API 中转平台 · 乘杜机器人</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+:root {
+  --bg-page: #F8F9FA;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #FFFFFF;
+  --text-primary: #1A1A1A;
+  --text-secondary: #5F6B7A;
+  --text-muted: #97A2B0;
+  --text-placeholder: #B0B8C4;
+  --border-default: #E8ECF0;
+  --border-light: #F2F4F6;
+  --accent-orange: #F47920;
+  --accent-orange-hover: #E06810;
+  --accent-orange-soft: #FFF3EB;
+  --accent-blue: #2B5C8F;
+  --accent-blue-hover: #1E4570;
+  --accent-blue-soft: #EEF4FA;
+  --accent-green: #52A34D;
+  --accent-green-soft: #EDF7EC;
+  --success-bg: #EDF7EC;
+  --success-text: #3D8B37;
+  --danger-bg: #FFF0EF;
+  --danger-text: #D8403A;
+  --warning-bg: #FFF8EB;
+  --warning-text: #B8860B;
+  --info-bg: #EEF4FA;
+  --info-text: #3B6DA8;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04);
+  --radius-card: 16px;
+  --radius-element: 10px;
+  --radius-sm: 8px;
+  --font-body: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Source Han Sans CN', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', 'SF Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-body); background: var(--bg-page); color: var(--text-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-size: 14px; line-height: 1.5; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CDD4DE; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #A8B2C0; }
+
+/* Framework decorative border */
+.framework-border { position: relative; }
+.framework-border::before {
+  content: '';
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999; height: 3px;
+  background: linear-gradient(90deg, #52A34D 0%, #52A34D 33.33%, #2B5C8F 33.33%, #2B5C8F 66.66%, #F47920 66.66%, #F47920 100%);
+  pointer-events: none;
+}
+
+.page-view { transition: opacity 0.3s ease, transform 0.3s ease; }
+.page-view.x-cloak { opacity: 0; transform: translateY(6px); }
+[x-cloak] { display: none !important; }
+
+/* Card */
+.card { background: var(--bg-card); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); transition: box-shadow 0.2s ease, transform 0.2s ease; }
+.card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.card-static { background: var(--bg-card); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
+
+/* Input */
+.input-field { width: 100%; height: 40px; padding: 0 14px; background: var(--bg-card); border: 1px solid var(--border-default); border-radius: var(--radius-sm); font-size: 14px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+.input-field::placeholder { color: var(--text-placeholder); }
+.input-field:focus { border-color: var(--accent-orange); box-shadow: 0 0 0 3px rgba(244,121,32,0.08); }
+.input-field.error { border-color: #D8403A; }
+select.input-field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2397A2B0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; padding: 0 18px; font-size: 14px; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; border: none; white-space: nowrap; }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--accent-orange); color: #fff; }
+.btn-primary:hover { background: var(--accent-orange-hover); }
+.btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); }
+.btn-outline:hover { background: #F8F9FA; border-color: #CDD4DE; }
+.btn-danger { background: transparent; color: #D8403A; border: 1px solid #FFD4D1; }
+.btn-danger:hover { background: #FFF0EF; }
+.btn-ghost { background: transparent; color: var(--text-secondary); }
+.btn-ghost:hover { background: #F5F6F8; }
+.btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+
+/* Tags */
+.tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 10px; font-size: 12px; font-weight: 500; border-radius: 100px; }
+.tag-info { background: var(--info-bg); color: var(--info-text); }
+.tag-success { background: var(--success-bg); color: var(--success-text); }
+.tag-warning { background: var(--warning-bg); color: var(--warning-text); }
+.tag-danger { background: var(--danger-bg); color: var(--danger-text); }
+
+/* Table */
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+table th { padding: 11px 16px; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-align: left; border-bottom: 1px solid var(--border-default); white-space: nowrap; background: #FAFBFC; }
+table td { padding: 13px 16px; font-size: 14px; color: var(--text-primary); border-bottom: 1px solid var(--border-light); }
+table tbody tr { transition: background 0.15s; }
+table tbody tr:hover { background: #FAFBFC; }
+
+/* Drawer */
+.drawer-overlay { background: rgba(0,0,0,0.25); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.drawer-panel { transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+
+/* Toast */
+@keyframes toastIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+.toast-enter { animation: toastIn 0.3s cubic-bezier(0.22,1,0.36,1); }
+
+/* Chart bar */
+.chart-bar { transition: height 0.7s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Toggle */
+.toggle-track { width: 36px; height: 20px; border-radius: 100px; cursor: pointer; transition: background 0.2s; }
+.toggle-knob { width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.15); transition: transform 0.2s; }
+.toggle-on .toggle-knob { transform: translateX(16px); }
+
+/* Orange accent bar */
+.accent-bar { width: 3px; height: 100%; min-height: 20px; border-radius: 2px; background: var(--accent-orange); }
+
+/* Suggestion dropdown */
+.sug-item { padding: 10px 16px; font-size: 14px; cursor: pointer; transition: background 0.12s; }
+.sug-item:hover { background: var(--accent-orange-soft); }
+
+/* Section number badge */
+.num-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #fff; }
+
+/* Stat card accent top bar */
+.stat-bar-primary { background: var(--accent-orange); }
+.stat-bar-blue { background: var(--accent-blue); }
+.stat-bar-green { background: var(--accent-green); }
+.stat-bar-gray { background: #8B96A5; }
+
+/* Mobile */
+.mobile-backdrop { background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+</style>
+</head>
+<body class="min-h-screen framework-border" x-data="app()" x-init="initApp()">
+
+<!-- TOASTS -->
+<div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none" style="max-width:360px">
+  <template x-for="toast in toasts" :key="toast.id">
+    <div class="toast-enter pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm"
+      :class="toast.type === 'success' ? 'bg-white border-[#D4EDDA] text-[#3D8B37]' : toast.type === 'error' ? 'bg-white border-[#FFD4D1] text-[#D8403A]' : 'bg-white border-[#CDE0F5] text-[#3B6DA8]'">
+      <span x-show="toast.type==='success'" class="text-base leading-none mt-0.5">&#10003;</span>
+      <span x-show="toast.type==='error'" class="text-base leading-none mt-0.5">&#10007;</span>
+      <span x-show="toast.type==='info'" class="text-base leading-none mt-0.5">&#8505;</span>
+      <span x-text="toast.message"></span>
+    </div>
+  </template>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LOGIN PAGE
+     ════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page === 'login'" x-cloak class="page-view fixed inset-0 z-0 flex bg-white">
+
+  <!-- Left: Brand Area -->
+  <div class="hidden lg:flex lg:w-5/12 xl:w-1/2 relative overflow-hidden" style="background:#FAFBFC">
+    <!-- Decorative top accent bar -->
+    <div class="absolute top-0 left-0 right-0 h-1 z-20" style="background:linear-gradient(90deg,#52A34D 0%,#52A34D 33.33%,#2B5C8F 33.33%,#2B5C8F 66.66%,#F47920 66.66%,#F47920 100%)"></div>
+    <!-- Subtle geometric decoration -->
+    <div class="absolute top-[12%] right-[15%] w-64 h-64 rounded-full opacity-[0.04]" style="background:#F47920"></div>
+    <div class="absolute bottom-[10%] left-[20%] w-48 h-48 rounded-full opacity-[0.03]" style="background:#2B5C8F"></div>
+    <div class="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full opacity-[0.02]" style="background:#F47920"></div>
+    <!-- Light dot pattern -->
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:radial-gradient(#CDD4DE 1px,transparent 1px);background-size:28px 28px;opacity:0.18"></div>
+
+    <div class="relative z-10 flex flex-col justify-center px-14 xl:px-20">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 tracking-wide" style="background:var(--accent-orange-soft);color:var(--accent-orange)">
+          <span class="w-1.5 h-1.5 rounded-full" style="background:var(--accent-orange)"></span>
+          乘杜机器人
+        </div>
+        <h1 class="text-[42px] xl:text-[48px] font-bold tracking-tight leading-tight" style="color:#1A1A1A">API 中转平台</h1>
+        <div class="flex items-center gap-3 mt-5">
+          <div class="w-10 h-[3px] rounded-sm" style="background:var(--accent-orange)"></div>
+          <span class="text-base font-medium" style="color:var(--text-secondary)">极简 · 高效 · 可度量</span>
+        </div>
+        <p class="mt-6 text-sm leading-relaxed max-w-sm" style="color:var(--text-placeholder)">面向企业内部的 DeepSeek V4 Flash 模型 API 分发与管理平台，聚焦 Key 的高效发放与精准计费。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Form -->
+  <div class="w-full lg:w-7/12 xl:w-1/2 flex items-center justify-center px-6 py-12" style="background:#FFFFFF">
+    <!-- Mobile brand -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 px-6 py-4 flex items-center gap-3 bg-white border-b border-[#E8ECF0] z-10">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style="background:var(--accent-orange)">乘</div>
+      <span class="font-semibold text-[#1A1A1A]">乘杜机器人 · API 中转平台</span>
+    </div>
+    <div class="w-full max-w-[400px]">
+      <!-- Card -->
+      <div class="card-static p-8 border border-[#E8ECF0]">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="num-badge" style="background:var(--accent-blue)">01</span>
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">账户登录</span>
+        </div>
+        <h2 class="text-2xl font-bold mt-2 mb-1" style="color:var(--text-primary)">欢迎回来</h2>
+        <p class="text-sm mb-6" style="color:var(--text-secondary)">请输入您的员工邮箱与密码</p>
+
+        <div x-show="loginError" class="flex items-center gap-2 px-4 py-3 rounded-lg text-sm mb-5" style="background:var(--danger-bg);color:var(--danger-text)">
+          <span>&#9888;</span><span x-text="loginError"></span>
+        </div>
+
+        <form @submit.prevent="handleLogin()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">邮箱</label>
+            <input type="email" x-model="loginForm.email" placeholder="you@chendurobot.com" class="input-field" :class="{ 'error': loginError }" autocomplete="email">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">密码</label>
+            <div class="relative">
+              <input :type="loginForm.showPw ? 'text' : 'password'" x-model="loginForm.password" placeholder="········" class="input-field pr-10" :class="{ 'error': loginError }" autocomplete="current-password">
+              <button type="button" @click="loginForm.showPw = !loginForm.showPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-base" style="color:var(--text-muted)" tabindex="-1">
+                <span x-show="!loginForm.showPw">&#128065;</span>
+                <span x-show="loginForm.showPw">&#128064;</span>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-full mt-3" :disabled="loginLoading">
+            <span x-show="!loginLoading">登录</span>
+            <span x-show="loginLoading" class="flex items-center gap-2">
+              <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              登录中...
+            </span>
+          </button>
+        </form>
+      </div>
+      <p class="text-center text-xs mt-6" style="color:var(--text-placeholder)">&copy; 2026 乘杜机器人</p>
+    </div>
+  </div>
+</div>
+
+<!-- Password Change Modal -->
+<div x-show="showChangePw" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4">
+  <div class="absolute inset-0 drawer-overlay" @click="showChangePw = false"></div>
+  <div class="relative w-full max-w-[420px] card-static overflow-hidden border border-[#E8ECF0]" x-show="showChangePw" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+    <div class="px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC">
+      <div class="flex items-center gap-2">
+        <span class="num-badge" style="background:var(--accent-orange)">!</span>
+        <div>
+          <h3 class="font-semibold" style="color:var(--text-primary)">修改初始密码</h3>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary)">首次登录需要设置新密码</p>
+        </div>
+      </div>
+    </div>
+    <div class="p-6 space-y-4">
+      <div x-show="pwError" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm" style="background:var(--danger-bg);color:var(--danger-text)">
+        <span>&#9888;</span><span x-text="pwError"></span>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">当前密码</label>
+        <input type="password" x-model="pwForm.current" class="input-field" placeholder="输入当前密码">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">新密码 <span class="font-normal" style="color:var(--text-muted)">(8-20位，含字母和数字)</span></label>
+        <input type="password" x-model="pwForm.newPw" class="input-field" placeholder="8-20位，含字母和数字">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">确认新密码</label>
+        <input type="password" x-model="pwForm.confirm" class="input-field" placeholder="再次输入新密码">
+      </div>
+    </div>
+    <div class="px-6 py-4 flex justify-end gap-3 border-t" style="border-color:var(--border-default);background:#FAFBFC">
+      <button @click="submitChangePw()" class="btn btn-primary" :disabled="pwLoading">
+        <span x-show="!pwLoading">确认修改</span>
+        <span x-show="pwLoading" class="flex items-center gap-2">
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          提交...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     APP SHELL (LOGGED IN)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page !== 'login'" x-cloak class="page-view min-h-screen flex">
+
+<!-- SIDEBAR (Desktop) -->
+<aside class="hidden lg:flex lg:flex-col w-56 flex-shrink-0 fixed inset-y-0 left-0 z-30 border-r" style="background:var(--bg-sidebar);border-color:var(--border-default)">
+  <!-- Logo -->
+  <div class="h-16 flex items-center gap-2.5 px-5 border-b" style="border-color:var(--border-default)">
+    <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background:var(--accent-orange)">乘</div>
+    <div>
+      <div class="text-sm font-semibold leading-tight" style="color:var(--text-primary)">API 中转平台</div>
+      <div class="text-[10px] leading-tight" style="color:var(--text-muted)">乘杜机器人</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+    <template x-for="item in visibleNav()" :key="item.page">
+      <a href="#" @click.prevent="navigate(item.page)"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-150"
+        :class="page === item.page ? 'text-white shadow-sm' : 'text-[#5F6B7A] hover:bg-[#F5F6F8] hover:text-[#1A1A1A]'"
+        :style="page === item.page ? 'background:var(--accent-orange)' : ''">
+        <span class="w-5 h-5 flex items-center justify-center flex-shrink-0" x-html="item.icon"></span>
+        <span x-text="item.name"></span>
+      </a>
+    </template>
+  </nav>
+
+  <!-- User -->
+  <div class="px-3 py-3 border-t" style="border-color:var(--border-default)">
+    <div class="relative" x-data="{ open: false }">
+      <button @click="open = !open" class="w-full flex items-center gap-3 px-3 py-2 rounded-[10px] hover:bg-[#F5F6F8] transition-colors">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0" style="background:var(--accent-orange)" x-text="currentUser.initials"></div>
+        <div class="text-left flex-1 min-w-0">
+          <div class="text-sm font-medium truncate" x-text="currentUser.name" style="color:var(--text-primary)"></div>
+          <div class="text-[11px] truncate" style="color:var(--text-muted)" x-text="roleLabel(currentUser.role)"></div>
+        </div>
+        <svg class="w-4 h-4 flex-shrink-0" style="color:var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>
+      <div x-show="open" @click.outside="open = false" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute bottom-full left-3 right-3 mb-1 rounded-xl overflow-hidden shadow-lg border bg-white" style="border-color:var(--border-default)">
+        <button @click="open=false;handleLogout()" class="w-full text-left px-3 py-2.5 text-sm text-[#D8403A] hover:bg-[#FFF0EF] transition-colors">退出登录</button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="flex-1 lg:ml-56 min-h-screen">
+
+<!-- Mobile Header -->
+<div class="lg:hidden sticky top-0 z-20 flex items-center justify-between px-4 h-14 bg-white border-b border-[#E8ECF0]">
+  <div class="flex items-center gap-3">
+    <button @click="mobileMenu = true" style="color:var(--text-secondary)">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style="background:var(--accent-orange)">乘</div>
+    <span class="font-semibold text-sm" style="color:var(--text-primary)">API 中转平台</span>
+  </div>
+  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold" style="background:var(--accent-orange)" x-text="currentUser.initials"></div>
+</div>
+
+<!-- Mobile Menu -->
+<div x-show="mobileMenu" x-cloak class="fixed inset-0 z-40 lg:hidden">
+  <div class="absolute inset-0 mobile-backdrop" @click="mobileMenu = false"></div>
+  <div class="absolute left-0 top-0 bottom-0 w-64 flex flex-col bg-white shadow-lg border-r border-[#E8ECF0]" x-show="mobileMenu" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0">
+    <div class="flex items-center justify-between px-5 h-14 border-b border-[#E8ECF0]">
+      <span class="font-semibold text-sm">导航菜单</span>
+      <button @click="mobileMenu = false" style="color:var(--text-secondary)">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <template x-for="item in visibleNav()" :key="item.page">
+        <a href="#" @click.prevent="navigate(item.page)"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-150"
+          :class="page === item.page ? 'text-white' : 'text-[#5F6B7A]'"
+          :style="page === item.page ? 'background:var(--accent-orange)' : ''">
+          <span class="w-5 h-5 flex items-center justify-center" x-html="item.icon"></span>
+          <span x-text="item.name"></span>
+        </a>
+      </template>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: DASHBOARD
+     ════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page === 'dashboard'" x-cloak class="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+    <div class="flex items-center gap-3">
+      <span class="num-badge" style="background:var(--accent-blue)">02</span>
+      <div>
+        <h1 class="text-2xl font-bold" style="color:var(--text-primary)">统计看板</h1>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary)">平台运营数据总览 · <span x-text="todayStr()"></span></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full border" style="background:#FAFBFC;border-color:var(--border-default);color:var(--text-secondary)">
+      <span class="w-2 h-2 rounded-full" style="background:var(--accent-green)"></span>
+      实时数据
+    </div>
+  </div>
+
+  <!-- 4 Stat Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Today Amount -->
+    <div class="card p-5 border border-[#F2F4F6] overflow-hidden">
+      <div class="h-[3px] -mx-5 -mt-5 mb-4 stat-bar-primary"></div>
+      <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:var(--text-muted)">今日消耗金额</div>
+      <div class="text-[28px] font-bold tracking-tight mb-1" style="color:var(--text-primary)">¥<span x-text="fmtNum(dashboard.stats.todayConsumption)"></span></div>
+      <div class="flex items-center gap-1 text-xs" style="color:var(--accent-green)">
+        <span>&#8593;</span><span x-text="dashboard.stats.consumptionTrend + '%'"></span>
+        <span style="color:var(--text-tertiary)">vs 昨日</span>
+      </div>
+    </div>
+    <!-- Thinking -->
+    <div class="card p-5 border border-[#F2F4F6] overflow-hidden">
+      <div class="h-[3px] -mx-5 -mt-5 mb-4 stat-bar-blue"></div>
+      <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:var(--text-muted)">Thinking 消耗</div>
+      <div class="text-[28px] font-bold tracking-tight mb-1" style="color:var(--text-primary)">¥<span x-text="fmtNum(dashboard.stats.thinkingConsumption)"></span></div>
+      <div class="text-xs" style="color:var(--text-secondary)">占 <span x-text="dashboard.stats.thinkingRatio + '%'"></span> 总消耗</div>
+    </div>
+    <!-- Active Keys -->
+    <div class="card p-5 border border-[#F2F4F6] overflow-hidden">
+      <div class="h-[3px] -mx-5 -mt-5 mb-4 stat-bar-green"></div>
+      <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:var(--text-muted)">活跃 Key 数</div>
+      <div class="text-[28px] font-bold tracking-tight mb-1" style="color:var(--text-primary)"><span x-text="dashboard.stats.activeKeys"></span></div>
+      <div class="text-xs" style="color:var(--text-secondary)">共 <span x-text="keys.length"></span> 个Key · <span x-text="dashboard.stats.activeKeyRatio + '%'"></span> 活跃</div>
+    </div>
+    <!-- Requests -->
+    <div class="card p-5 border border-[#F2F4F6] overflow-hidden">
+      <div class="h-[3px] -mx-5 -mt-5 mb-4 stat-bar-gray"></div>
+      <div class="text-xs font-semibold uppercase tracking-wider mb-2" style="color:var(--text-muted)">今日请求数</div>
+      <div class="text-[28px] font-bold tracking-tight mb-1" style="color:var(--text-primary)"><span x-text="fmtInt(dashboard.stats.todayRequests)"></span></div>
+      <div class="flex items-center gap-1 text-xs" style="color:var(--accent-green)">
+        <span>&#8593;</span><span x-text="dashboard.stats.requestTrend + '%'"></span>
+        <span style="color:var(--text-secondary)">vs 昨日</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart + Thinking Cards -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+    <!-- Chart (2 cols) -->
+    <div class="lg:col-span-2 card-static p-5 border border-[#F2F4F6]">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="text-sm font-semibold" style="color:var(--text-primary)">消耗趋势</h3>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary)">近7天金额消耗 · Thinking叠加</p>
+        </div>
+        <div class="flex rounded-lg overflow-hidden text-xs font-medium border" style="border-color:var(--border-default)">
+          <button @click="switchChartRange('7d')" class="px-3 py-1.5 transition-colors" :class="chartRange === '近7天' ? 'text-white' : ''" :style="chartRange === '近7天' ? 'background:var(--accent-orange)' : 'color:var(--text-secondary)'">近7天</button>
+          <button @click="switchChartRange('30d')" class="px-3 py-1.5 transition-colors" :class="chartRange === '近30天' ? 'text-white' : ''" :style="chartRange === '近30天' ? 'background:var(--accent-orange)' : 'color:var(--text-secondary)'">近30天</button>
+        </div>
+      </div>
+      <div class="flex items-end gap-2 h-48 mt-4">
+        <template x-for="(d,i) in chartData" :key="i">
+          <div class="flex-1 flex flex-col items-center gap-1.5 group cursor-pointer" @mouseenter="chartHover = i" @mouseleave="chartHover = null">
+            <div class="relative w-full flex flex-col items-center">
+              <div x-show="chartHover === i" class="absolute -top-8 whitespace-nowrap text-xs font-bold px-2 py-1 rounded-md shadow-sm bg-white border border-[#E8ECF0]" style="color:var(--text-primary)">
+                ¥<span x-text="fmtNum(d.amount)"></span>
+              </div>
+              <div class="w-full max-w-[36px] mx-auto rounded-t-md flex flex-col items-end justify-end overflow-hidden" style="height:160px;background:#F5F6F8">
+                <div class="w-full chart-bar rounded-t-[3px]" :style="'height:' + (d.amount / maxChartAmount * 100) + '%;background:' + (chartHover === i ? '#E06810' : '#F47920')"></div>
+                <div class="w-full chart-bar rounded-t-[3px]" :style="'height:' + (d.think / maxChartAmount * 100) + '%;background:' + (chartHover === i ? '#1E4570' : '#2B5C8F')"></div>
+              </div>
+            </div>
+            <span class="text-[10px] font-medium" style="color:var(--text-muted)" x-text="d.label"></span>
+          </div>
+        </template>
+      </div>
+      <div class="flex items-center gap-6 mt-5 pt-4 border-t" style="border-color:var(--border-light)">
+        <div class="flex items-center gap-2 text-xs font-medium" style="color:var(--text-secondary)">
+          <span class="w-3 h-3 rounded-[3px]" style="background:var(--accent-orange)"></span> 消耗金额
+        </div>
+        <div class="flex items-center gap-2 text-xs font-medium" style="color:var(--text-secondary)">
+          <span class="w-3 h-3 rounded-[3px]" style="background:var(--accent-blue)"></span> Thinking 部分
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Thinking Cards + Quick -->
+    <div class="space-y-4">
+      <div class="card-static p-4 border border-[#F2F4F6]" style="background:var(--accent-blue-soft)">
+        <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--accent-blue)">Thinking Token</div>
+        <div class="text-[22px] font-bold tracking-tight" style="color:#1A1A1A"><span x-text="fmtInt(dashboard.thinking.tokenCount)"></span></div>
+        <div class="text-xs mt-1" style="color:var(--text-secondary)">推理 Token 累计消耗</div>
+      </div>
+      <div class="card-static p-4 border border-[#F2F4F6]" style="background:var(--accent-blue-soft)">
+        <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--accent-blue)">Thinking 金额</div>
+        <div class="text-[22px] font-bold tracking-tight" style="color:#1A1A1A">¥<span x-text="fmtNum(dashboard.thinking.amount)"></span></div>
+        <div class="text-xs mt-1" style="color:var(--text-secondary)">推理调用累计消耗</div>
+      </div>
+      <div class="card-static p-4 border border-[#F2F4F6]" style="background:var(--accent-blue-soft)">
+        <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--accent-blue)">Thinking 占比</div>
+        <div class="text-[22px] font-bold tracking-tight" style="color:#1A1A1A"><span x-text="dashboard.thinking.ratio + '%'"></span></div>
+        <div class="text-xs mt-1" style="color:var(--text-secondary)">占总调用量比例</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick + Activity -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="card-static p-5 border border-[#F2F4F6]">
+      <h3 class="text-sm font-semibold mb-4" style="color:var(--text-primary)">快速操作</h3>
+      <div class="space-y-2">
+        <button @click="navigate('keys');setTimeout(()=>keyDrawer='single',200)" class="w-full flex items-center gap-3 p-3.5 rounded-xl text-left hover:bg-[#FAFBFC] transition-colors border border-[#F2F4F6]">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--accent-orange-soft);color:var(--accent-orange)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <div>
+            <div class="text-sm font-medium" style="color:var(--text-primary)">生成新 Key</div>
+            <div class="text-xs" style="color:var(--text-muted)">单个或批量生成API密钥</div>
+          </div>
+        </button>
+        <button @click="navigate('customers')" class="w-full flex items-center gap-3 p-3.5 rounded-xl text-left hover:bg-[#FAFBFC] transition-colors border border-[#F2F4F6]">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--info-bg);color:var(--accent-blue)">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <div>
+            <div class="text-sm font-medium" style="color:var(--text-primary)">查看客户报表</div>
+            <div class="text-xs" style="color:var(--text-muted)">客户维度用量统计</div>
+          </div>
+        </button>
+      </div>
+      <div class="mt-4 p-3 rounded-xl text-xs border" style="background:var(--accent-orange-soft);border-color:#FFD9BF;color:var(--accent-orange)">
+        <span class="font-semibold">Thinking 模式</span> 已就绪 · 客户端通过请求参数控制推理开关，服务端默认关闭。
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="lg:col-span-2 card-static p-5 border border-[#F2F4F6]">
+      <h3 class="text-sm font-semibold mb-4" style="color:var(--text-primary)">最近活动</h3>
+      <div class="space-y-0.5">
+        <template x-for="(act,i) in recentActivity" :key="i">
+          <div class="flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-[#FAFBFC] transition-colors" :class="i < recentActivity.length - 1 ? 'border-b border-[#F2F4F6]' : ''">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0" :style="'background:' + act.avatarBg" x-text="act.initials"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm" style="color:var(--text-primary)" x-html="act.text"></div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs" style="color:var(--text-muted)" x-text="act.time"></span>
+                <span class="tag text-[10px]" :class="act.tagClass" x-text="act.tag"></span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: KEY MANAGEMENT
+     ════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page === 'keys'" x-cloak class="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+      <span class="num-badge" style="background:var(--accent-blue)">03</span>
+      <div>
+        <h1 class="text-2xl font-bold" style="color:var(--text-primary)">Key 管理</h1>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary)">管理所有 API 密钥 · 共 <span x-text="keys.length"></span> 个</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button @click="openSingleDrawer()" class="btn btn-primary">生成 Key</button>
+      <button @click="openBatchDrawer()" class="btn btn-outline">批量生成</button>
+    </div>
+  </div>
+
+  <!-- Search + Filters -->
+  <div class="flex flex-col sm:flex-row gap-3 mb-5">
+    <div class="relative flex-1 max-w-sm">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style="color:var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" x-model="keySearch" placeholder="搜索 Key 或客户名称..." class="input-field pl-9">
+    </div>
+    <select x-model="keyFilterType" class="input-field" style="width:130px"><option value="">全部类型</option><option value="permanent">永久 Key</option><option value="test">测试 Key</option></select>
+    <select x-model="keyFilterStatus" class="input-field" style="width:130px"><option value="">全部状态</option><option value="enabled">已启用</option><option value="disabled">已停用</option></select>
+    <select x-model="keyFilterCreator" class="input-field" style="width:130px"><option value="">全部创建者</option>
+      <template x-for="emp in employees" :key="emp.id"><option :value="emp.name" x-text="emp.name"></option></template>
+    </select>
+  </div>
+
+  <!-- Bulk Action -->
+  <div x-show="keySelected.length > 0" class="flex items-center gap-3 px-4 py-2.5 rounded-xl mb-4 text-sm border" style="background:var(--accent-orange-soft);border-color:#FFD9BF">
+    <span class="font-semibold" style="color:var(--accent-orange)" x-text="'已选 ' + keySelected.length + ' 项'"></span>
+    <div class="flex-1"></div>
+    <button @click="batchAction('disable')" class="btn btn-outline btn-sm">批量停用</button>
+    <button @click="batchAction('enable')" class="btn btn-primary btn-sm">批量启用</button>
+  </div>
+
+  <!-- Table -->
+  <div class="card-static overflow-hidden border border-[#F2F4F6]">
+    <div class="table-container">
+      <table>
+        <thead><tr><th style="width:40px"><input type="checkbox" @change="selectAll($event)" :checked="keySelected.length === filteredKeys().length && filteredKeys().length > 0"></th><th>Key</th><th>客户名称</th><th>类型</th><th>额度</th><th>剩余</th><th>状态</th><th>创建者</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody>
+          <template x-for="k in filteredKeys()" :key="k.id">
+            <tr>
+              <td><input type="checkbox" :value="k.id" x-model="keySelected"></td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <code class="text-[13px] cursor-pointer hover:text-[#F47920] transition-colors font-medium" style="font-family:var(--font-mono);background:#F5F6F8;padding:3px 8px;border-radius:5px" @click="showKeyDetail(k)" x-text="k.key"></code>
+                  <button @click="copyText(k.key)" class="flex-shrink-0 p-1 rounded hover:bg-[#F0F1F3] transition-colors" style="color:var(--text-muted)" title="复制">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  </button>
+                </div>
+              </td>
+              <td><button @click="navigateToCustomer(k.customer)" class="hover:text-[#F47920] transition-colors font-medium" style="color:var(--text-primary)" x-text="k.customer"></button></td>
+              <td><span class="tag" :class="k.type === 'permanent' ? 'tag-info' : 'tag-warning'" x-text="k.type === 'permanent' ? '永久' : '测试'"></span></td>
+              <td style="font-family:var(--font-mono);font-size:13px" x-text="k.type === 'permanent' ? '无限' : '¥' + fmtNum(k.quota)"></td>
+              <td style="font-family:var(--font-mono);font-size:13px" x-text="k.type === 'permanent' ? '--' : '¥' + fmtNum(k.remaining)"></td>
+              <td><span class="inline-flex items-center gap-1.5 text-xs font-semibold" :class="k.status === 'enabled' ? 'text-[#3D8B37]' : 'text-[#D8403A]'"><span class="w-1.5 h-1.5 rounded-full" :class="k.status === 'enabled' ? 'bg-[#3D8B37]' : 'bg-[#D8403A]'"></span><span x-text="k.status === 'enabled' ? '已启用' : '已停用'"></span></span></td>
+              <td x-text="k.creator"></td>
+              <td x-text="k.date"></td>
+              <td>
+                <div class="flex items-center gap-1">
+                  <button @click="copyText(k.key)" class="btn btn-ghost btn-sm">复制</button>
+                  <button @click="toggleKeyStatus(k)" class="btn btn-ghost btn-sm" x-text="k.status === 'enabled' ? '停用' : '启用'"></button>
+                  <button x-show="currentUser.role === 'admin'" @click="deleteKey(k)" class="btn btn-danger btn-sm">删除</button>
+                </div>
+              </td>
+            </tr>
+          </template>
+          <tr x-show="filteredKeys().length === 0"><td colspan="10" class="text-center py-16" style="color:var(--text-muted)">暂无匹配的 Key</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Generate Drawer (Single) -->
+  <div x-show="keyDrawer === 'single'" x-cloak class="fixed inset-0 z-50">
+    <div class="absolute inset-0 drawer-overlay" @click="keyDrawer = null"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-lg drawer-panel flex flex-col shadow-lg border-l" style="background:var(--bg-card);border-color:var(--border-default)" x-show="keyDrawer === 'single'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC">
+        <div>
+          <h3 class="font-semibold" style="color:var(--text-primary)">生成 Key</h3>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary)">为指定客户创建单个 API 密钥</p>
+        </div>
+        <button @click="keyDrawer = null" class="p-1.5 rounded-lg hover:bg-[#F0F1F3]" style="color:var(--text-muted)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6 space-y-5">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">客户名称 <span style="color:var(--accent-orange)">*</span></label>
+          <div class="relative">
+            <input type="text" x-model="singleForm.customer" @input="doSuggest('single')" @keydown.enter.prevent="handleSugEnter('single')" placeholder="输入客户名称（≥2字可联想）" class="input-field">
+            <div x-show="singleForm.sug.length > 0" class="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg border z-10 overflow-hidden bg-white" style="border-color:var(--border-default)">
+              <template x-for="s in singleForm.sug" :key="s"><div @click="selectSug('single', s)" class="sug-item" x-text="s"></div></template>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Key 类型</label>
+          <div class="flex rounded-lg overflow-hidden border" style="border-color:var(--border-default);width:fit-content">
+            <button @click="singleForm.keyType='test'" class="px-4 py-2 text-sm font-medium transition-colors" :class="singleForm.keyType === 'test' ? 'text-white' : ''" :style="singleForm.keyType === 'test' ? 'background:var(--accent-orange)' : 'color:var(--text-secondary)'">测试 Key</button>
+            <button @click="singleForm.keyType='permanent'" class="px-4 py-2 text-sm font-medium transition-colors" :class="singleForm.keyType === 'permanent' ? 'text-white' : ''" :style="singleForm.keyType === 'permanent' ? 'background:var(--accent-blue)' : 'color:var(--text-secondary)'">永久 Key</button>
+          </div>
+        </div>
+        <div x-show="singleForm.keyType === 'test'">
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">额度（元）</label>
+          <input type="number" x-model="singleForm.quota" min="0.01" step="0.01" class="input-field">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">备注</label>
+          <input type="text" x-model="singleForm.note" placeholder="内部标识（选填）" class="input-field">
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t" style="border-color:var(--border-default);background:#FAFBFC">
+        <button @click="keyDrawer = null" class="btn btn-outline">取消</button>
+        <button @click="doGenerate()" class="btn btn-primary" :disabled="!singleForm.customer.trim()">确认生成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Drawer -->
+  <div x-show="keyDrawer === 'batch'" x-cloak class="fixed inset-0 z-50">
+    <div class="absolute inset-0 drawer-overlay" @click="keyDrawer = null"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-lg drawer-panel flex flex-col shadow-lg border-l" style="background:var(--bg-card);border-color:var(--border-default)" x-show="keyDrawer === 'batch'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC">
+        <div><h3 class="font-semibold" style="color:var(--text-primary)">批量生成 Key</h3><p class="text-xs mt-0.5" style="color:var(--text-secondary)">一次生成 10-100 个</p></div>
+        <button @click="keyDrawer = null" class="p-1.5 rounded-lg hover:bg-[#F0F1F3]" style="color:var(--text-muted)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6 space-y-5">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">客户名称 <span style="color:var(--accent-orange)">*</span></label>
+          <div class="relative"><input type="text" x-model="batchForm.customer" @input="doSuggest('batch')" @keydown.enter.prevent="handleSugEnter('batch')" placeholder="输入客户名称" class="input-field">
+            <div x-show="batchForm.sug.length > 0" class="absolute left-0 right-0 top-full mt-1 rounded-xl shadow-lg border z-10 overflow-hidden bg-white" style="border-color:var(--border-default)"><template x-for="s in batchForm.sug" :key="s"><div @click="selectSug('batch', s)" class="sug-item" x-text="s"></div></template></div>
+          </div>
+        </div>
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Key 类型</label>
+          <div class="flex rounded-lg overflow-hidden border" style="border-color:var(--border-default);width:fit-content">
+            <button @click="batchForm.keyType='test'" class="px-4 py-2 text-sm font-medium transition-colors" :class="batchForm.keyType === 'test' ? 'text-white' : ''" :style="batchForm.keyType === 'test' ? 'background:var(--accent-orange)' : 'color:var(--text-secondary)'">测试 Key</button>
+            <button @click="batchForm.keyType='permanent'" class="px-4 py-2 text-sm font-medium transition-colors" :class="batchForm.keyType === 'permanent' ? 'text-white' : ''" :style="batchForm.keyType === 'permanent' ? 'background:var(--accent-blue)' : 'color:var(--text-secondary)'">永久 Key</button>
+          </div>
+        </div>
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">生成数量 <span style="color:var(--accent-orange)">*</span></label><input type="number" x-model="batchForm.count" min="10" max="100" class="input-field"><p class="text-xs mt-1" style="color:var(--text-muted)">范围 10 - 100 个</p></div>
+        <div x-show="batchForm.keyType === 'test'"><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">单个额度（元）</label><input type="number" x-model="batchForm.quota" min="0.01" step="0.01" class="input-field"></div>
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">备注</label><input type="text" x-model="batchForm.note" placeholder="所有 Key 共用（选填）" class="input-field"></div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t" style="border-color:var(--border-default);background:#FAFBFC">
+        <button @click="keyDrawer = null" class="btn btn-outline">取消</button>
+        <button @click="doBatch()" class="btn btn-primary" :disabled="!batchForm.customer.trim() || batchForm.count < 10 || batchForm.count > 100">确认生成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Result Modal -->
+  <div x-show="resultOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 drawer-overlay" @click="resultOpen = false"></div>
+    <div class="relative w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col rounded-2xl shadow-lg border bg-white" style="border-color:var(--border-default)" x-show="resultOpen" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+      <div class="px-6 py-4 text-white" style="background:var(--accent-green)">
+        <div class="flex items-center gap-2"><span class="text-xl">&#10003;</span><span class="font-semibold" x-text="resultMsg"></span></div>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div class="table-container"><table><thead><tr><th>Key</th><th>客户名称</th><th>类型</th><th>额度</th><th>状态</th><th>创建时间</th></tr></thead>
+        <tbody><template x-for="k in resultKeys" :key="k.id"><tr>
+          <td><code class="text-[13px]" style="font-family:var(--font-mono)" x-text="k.key"></code></td>
+          <td x-text="k.customer"></td>
+          <td><span class="tag" :class="k.type === 'permanent' ? 'tag-info' : 'tag-warning'" x-text="k.type === 'permanent' ? '永久' : '测试'"></span></td>
+          <td x-text="k.type === 'permanent' ? '无限' : '¥' + fmtNum(k.quota)"></td>
+          <td><span class="inline-flex items-center gap-1 text-xs font-semibold text-[#3D8B37]"><span class="w-1.5 h-1.5 rounded-full bg-[#3D8B37]"></span>已启用</span></td>
+          <td x-text="k.date"></td>
+        </tr></template></tbody></table></div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t" style="border-color:var(--border-default);background:#FAFBFC">
+        <button @click="exportCSV()" class="btn btn-outline">导出 CSV</button>
+        <button @click="resultOpen = false" class="btn btn-primary">返回列表</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Detail Drawer -->
+  <div x-show="detailOpen" x-cloak class="fixed inset-0 z-50">
+    <div class="absolute inset-0 drawer-overlay" @click="detailOpen = false"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md drawer-panel flex flex-col shadow-lg border-l" style="background:var(--bg-card);border-color:var(--border-default)" x-show="detailOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC">
+        <h3 class="font-semibold" style="color:var(--text-primary)">Key 详情</h3>
+        <button @click="detailOpen = false" class="p-1.5 rounded-lg hover:bg-[#F0F1F3]" style="color:var(--text-muted)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6 space-y-4" x-show="detailKey">
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">Key 值</label>
+          <div class="flex items-center gap-2 p-3 rounded-xl border" style="background:#F8F9FA;border-color:var(--border-default)">
+            <code class="text-[13px] flex-1 break-all font-medium" style="font-family:var(--font-mono)" x-text="detailKey ? detailKey.key : ''"></code>
+            <button @click="detailKey && copyText(detailKey.key)" class="btn btn-ghost btn-sm flex-shrink-0">复制</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div><span class="text-xs font-semibold" style="color:var(--text-muted)">客户名称</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? detailKey.customer : ''"></p></div>
+          <div><span class="text-xs font-semibold" style="color:var(--text-muted)">类型</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? (detailKey.type === 'permanent' ? '永久 Key' : '测试 Key') : ''"></p></div>
+          <div><span class="text-xs font-semibold" style="color:var(--text-muted)">总额度</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? (detailKey.type === 'permanent' ? '无限' : '¥' + fmtNum(detailKey.quota)) : ''"></p></div>
+          <div><span class="text-xs font-semibold" style="color:var(--text-muted)">剩余额度</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? (detailKey.type === 'permanent' ? '--' : '¥' + fmtNum(detailKey.remaining)) : ''"></p></div>
+          <div><span class="text-xs font-semibold" style="color:var(--text-muted)">创建者</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? detailKey.creator : ''"></p></div>
+          <div><span class="text-xs font-semibold" style="color:var(--text-muted)">状态</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? (detailKey.status === 'enabled' ? '已启用' : '已停用') : ''"></p></div>
+          <div class="col-span-2"><span class="text-xs font-semibold" style="color:var(--text-muted)">创建时间</span><p class="text-sm font-medium mt-0.5" x-text="detailKey ? detailKey.date : ''"></p></div>
+        </div>
+        <div class="pt-4 border-t" style="border-color:var(--border-light)" x-show="detailKey">
+          <h4 class="text-xs font-semibold uppercase tracking-wider mb-3" style="color:var(--text-muted)">Thinking 统计 (V2.2)</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="p-3 rounded-xl border" style="background:var(--accent-blue-soft);border-color:#CDE0F5"><div class="text-lg font-bold" style="font-family:var(--font-mono);color:var(--accent-blue)" x-text="detailKey ? fmtInt(detailKey.thinkingTokens || 0) : '0'"></div><div class="text-[10px] mt-0.5 font-medium" style="color:var(--text-secondary)">Tokens</div></div>
+            <div class="p-3 rounded-xl border" style="background:var(--accent-blue-soft);border-color:#CDE0F5"><div class="text-lg font-bold" style="font-family:var(--font-mono);color:var(--accent-blue)" x-text="detailKey ? (detailKey.thinkingCalls || 0) : '0'"></div><div class="text-[10px] mt-0.5 font-medium" style="color:var(--text-secondary)">调用次数</div></div>
+            <div class="p-3 rounded-xl border" style="background:var(--accent-blue-soft);border-color:#CDE0F5"><div class="text-lg font-bold" style="font-family:var(--font-mono);color:var(--accent-blue)">¥<span x-text="detailKey ? fmtNum(detailKey.thinkingAmount || 0) : '0.00'"></span></div><div class="text-[10px] mt-0.5 font-medium" style="color:var(--text-secondary)">金额</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: CUSTOMER LIBRARY
+     ════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page === 'customers'" x-cloak class="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+      <span class="num-badge" style="background:var(--accent-blue)">04</span>
+      <div><h1 class="text-2xl font-bold" style="color:var(--text-primary)">客户库</h1><p class="text-sm mt-0.5" style="color:var(--text-secondary)">管理所有客户组织 · 共 <span x-text="customers.length"></span> 个</p></div>
+    </div>
+    <button @click="customerAddOpen = true" class="btn btn-primary">新增客户</button>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="card p-4 border border-[#F2F4F6]"><div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text-muted)">客户总数</div><div class="text-2xl font-bold" style="color:var(--accent-orange)" x-text="customers.length"></div></div>
+    <div class="card p-4 border border-[#F2F4F6]"><div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text-muted)">关联 Key 总数</div><div class="text-2xl font-bold" style="color:var(--accent-blue)" x-text="totalKeyCount()"></div></div>
+    <div class="card p-4 border border-[#F2F4F6]"><div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text-muted)">活跃客户（当月）</div><div class="text-2xl font-bold" style="color:var(--accent-green)" x-text="activeCustomerCount()"></div></div>
+  </div>
+
+  <div class="relative max-w-sm mb-5">
+    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style="color:var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="text" x-model="customerSearch" placeholder="搜索客户名称..." class="input-field pl-9">
+  </div>
+
+  <div class="card-static overflow-hidden border border-[#F2F4F6]">
+    <div class="table-container">
+      <table>
+        <thead><tr><th>客户名称</th><th>Key 数量</th><th>活跃</th><th>总消耗</th><th>最近活跃</th><th>操作</th></tr></thead>
+        <tbody>
+          <template x-for="c in filteredCustomers()" :key="c.name">
+            <tr>
+              <td><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0" :style="'background:' + customerAvatarBg(c.name)" x-text="c.name.charAt(0)"></div><span class="font-semibold" x-text="c.name"></span></div></td>
+              <td><span class="font-semibold" x-text="c.keyCount"></span></td>
+              <td><span class="inline-flex items-center gap-1.5 text-xs font-semibold" :class="c.activeKeys > 0 ? 'text-[#3D8B37]' : 'text-[#97A2B0]'"><span class="w-1.5 h-1.5 rounded-full" :class="c.activeKeys > 0 ? 'bg-[#3D8B37]' : 'bg-[#CDD4DE]'"></span><span x-text="c.activeKeys"></span></span></td>
+              <td style="font-family:var(--font-mono);font-size:13px;font-weight:500">¥<span x-text="fmtNum(c.totalConsumption)"></span></td>
+              <td x-text="c.lastActive"></td>
+              <td><button @click="showCustomerDetail(c)" class="btn btn-ghost btn-sm font-semibold" style="color:var(--accent-orange)">查看详情</button></td>
+            </tr>
+          </template>
+          <tr x-show="filteredCustomers().length === 0"><td colspan="6" class="text-center py-16" style="color:var(--text-muted)"><span x-show="customerSearch">无匹配客户</span><span x-show="!customerSearch">暂无客户数据，点击右上角新增客户添加</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Customer Drawer -->
+  <div x-show="customerAddOpen" x-cloak class="fixed inset-0 z-50">
+    <div class="absolute inset-0 drawer-overlay" @click="customerAddOpen = false"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md drawer-panel flex flex-col shadow-lg border-l" style="background:var(--bg-card);border-color:var(--border-default)" x-show="customerAddOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC"><h3 class="font-semibold" style="color:var(--text-primary)">新增客户</h3><button @click="customerAddOpen = false" class="p-1.5 rounded-lg hover:bg-[#F0F1F3]" style="color:var(--text-muted)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+      <div class="flex-1 p-6">
+        <div x-show="customerAddError" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm mb-4" style="background:var(--danger-bg);color:var(--danger-text)"><span>&#9888;</span><span x-text="customerAddError"></span></div>
+        <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">客户名称 <span style="color:var(--accent-orange)">*</span></label>
+        <input type="text" x-model="customerAddForm.name" placeholder="输入公司/组织名称" class="input-field">
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t" style="border-color:var(--border-default);background:#FAFBFC"><button @click="customerAddOpen = false" class="btn btn-outline">取消</button><button @click="doAddCustomer()" class="btn btn-primary">确认添加</button></div>
+    </div>
+  </div>
+
+  <!-- Customer Detail Drawer -->
+  <div x-show="customerDetailOpen" x-cloak class="fixed inset-0 z-50">
+    <div class="absolute inset-0 drawer-overlay" @click="customerDetailOpen = false"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-2xl drawer-panel flex flex-col shadow-lg border-l" style="background:var(--bg-card);border-color:var(--border-default)" x-show="customerDetailOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+      <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC"><h3 class="font-semibold" style="color:var(--text-primary)" x-text="customerDetail ? customerDetail.name : ''"></h3><button @click="customerDetailOpen = false" class="p-1.5 rounded-lg hover:bg-[#F0F1F3]" style="color:var(--text-muted)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+      <div class="flex-1 overflow-y-auto p-6" x-show="customerDetail">
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="p-4 rounded-xl border" style="background:#FAFBFC;border-color:var(--border-default)"><div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--text-muted)">Key 总数</div><div class="text-2xl font-bold" x-text="customerDetail ? customerDetail.keyCount : 0"></div></div>
+          <div class="p-4 rounded-xl border" style="background:var(--accent-green-soft);border-color:#C8E6C5"><div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--accent-green)">活跃 Key</div><div class="text-2xl font-bold" x-text="customerDetail ? customerDetail.activeKeys : 0"></div></div>
+          <div class="p-4 rounded-xl border" style="background:var(--accent-orange-soft);border-color:#FFD9BF"><div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:var(--accent-orange)">总消耗</div><div class="text-2xl font-bold">¥<span x-text="customerDetail ? fmtNum(customerDetail.totalConsumption) : '0.00'"></span></div></div>
+        </div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider mb-3" style="color:var(--text-muted)">关联 Key 列表</h4>
+        <div class="table-container"><table>
+          <thead><tr><th>Key</th><th>类型</th><th>状态</th><th>额度</th><th>剩余</th><th>创建者</th><th>创建时间</th></tr></thead>
+          <tbody><template x-for="k in customerDetailKeys()" :key="k.id"><tr>
+            <td><div class="flex items-center gap-1.5"><code class="text-[12px] truncate max-w-[180px] font-medium" style="font-family:var(--font-mono)" x-text="k.preview"></code><button @click="copyText(k.key)" class="flex-shrink-0 p-0.5 rounded hover:bg-[#F0F1F3]" style="color:var(--text-muted)"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></button></div></td>
+            <td><span class="tag" :class="k.type === 'permanent' ? 'tag-info' : 'tag-warning'" x-text="k.type === 'permanent' ? '永久' : '测试'"></span></td>
+            <td><span class="inline-flex items-center gap-1 text-xs font-semibold" :class="k.status === 'enabled' ? 'text-[#3D8B37]' : 'text-[#D8403A]'"><span class="w-1.5 h-1.5 rounded-full" :class="k.status === 'enabled' ? 'bg-[#3D8B37]' : 'bg-[#D8403A]'"></span><span x-text="k.status === 'enabled' ? '已启用' : '已停用'"></span></span></td>
+            <td style="font-family:var(--font-mono);font-size:12px" x-text="k.type === 'permanent' ? '无限' : '¥' + fmtNum(k.quota)"></td>
+            <td style="font-family:var(--font-mono);font-size:12px" x-text="k.type === 'permanent' ? '--' : '¥' + fmtNum(k.remaining)"></td>
+            <td x-text="k.creator"></td><td x-text="k.date"></td>
+          </tr></template></tbody>
+        </table></div>
+        <div class="mt-4 text-right"><button @click="navigateToKeyFilter(customerDetail.name)" class="btn btn-outline btn-sm">在 Key 管理中查看</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: EMPLOYEE MANAGEMENT (NEW)
+     ════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page === 'employees'" x-cloak class="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+      <span class="num-badge" style="background:var(--accent-blue)">05</span>
+      <div><h1 class="text-2xl font-bold" style="color:var(--text-primary)">员工管理</h1><p class="text-sm mt-0.5" style="color:var(--text-secondary)">管理内部员工账号 · 共 <span x-text="employees.length"></span> 人</p></div>
+    </div>
+    <button @click="openEmployeeModal('add')" class="btn btn-primary">新增员工</button>
+  </div>
+  <div class="relative max-w-sm mb-5">
+    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style="color:var(--text-muted)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="text" x-model="employeeSearch" placeholder="搜索姓名或邮箱..." class="input-field pl-9">
+  </div>
+  <div class="card-static overflow-hidden border border-[#F2F4F6]"><div class="table-container"><table>
+    <thead><tr><th>姓名</th><th>邮箱</th><th>角色</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+    <tbody>
+      <template x-for="emp in filteredEmployees()" :key="emp.id"><tr>
+        <td><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0" :style="'background:' + employeeAvatarBg(emp.name)" x-text="emp.name.charAt(0)"></div><span class="font-semibold" x-text="emp.name"></span></div></td>
+        <td style="font-family:var(--font-mono);font-size:13px" x-text="emp.email"></td>
+        <td><span class="tag" :class="emp.role === 'admin' ? 'tag-info' : 'tag-success'" x-text="emp.role === 'admin' ? '管理员' : '授权实施/研发'"></span></td>
+        <td><span class="inline-flex items-center gap-1.5 text-xs font-semibold" :class="emp.status === 'active' ? 'text-[#3D8B37]' : 'text-[#D8403A]'"><span class="w-1.5 h-1.5 rounded-full" :class="emp.status === 'active' ? 'bg-[#3D8B37]' : 'bg-[#D8403A]'"></span><span x-text="emp.status === 'active' ? '正常' : '已停用'"></span></span></td>
+        <td x-text="emp.createdAt"></td>
+        <td><div class="flex items-center gap-1"><button @click="openEmployeeModal('edit', emp)" class="btn btn-ghost btn-sm">编辑</button><button @click="toggleEmployeeStatus(emp)" class="btn btn-ghost btn-sm" x-text="emp.status === 'active' ? '停用' : '启用'"></button></div></td>
+      </tr></template>
+      <tr x-show="filteredEmployees().length === 0"><td colspan="6" class="text-center py-16" style="color:var(--text-muted)">暂无员工数据</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- Employee Modal -->
+  <div x-show="employeeModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 drawer-overlay" @click="employeeModalOpen = false"></div>
+    <div class="relative w-full max-w-[440px] card-static overflow-hidden border border-[#F2F4F6]" x-show="employeeModalOpen" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+      <div class="px-6 py-4 border-b" style="border-color:var(--border-default);background:#FAFBFC"><h3 class="font-semibold" style="color:var(--text-primary)" x-text="employeeModalMode === 'add' ? '新增员工' : '编辑员工'"></h3></div>
+      <div class="p-6 space-y-4">
+        <div x-show="employeeFormError" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm" style="background:var(--danger-bg);color:var(--danger-text)"><span>&#9888;</span><span x-text="employeeFormError"></span></div>
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">姓名 <span style="color:var(--accent-orange)">*</span></label><input type="text" x-model="employeeForm.name" class="input-field" placeholder="员工姓名"></div>
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">邮箱 <span style="color:var(--accent-orange)">*</span></label><input type="email" x-model="employeeForm.email" class="input-field" placeholder="login@chendurobot.com"></div>
+        <div x-show="employeeModalMode === 'add'"><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">初始密码 <span style="color:var(--accent-orange)">*</span></label><input type="text" x-model="employeeForm.password" class="input-field" placeholder="8-20位，含字母和数字"></div>
+        <div><label class="block text-xs font-semibold mb-1.5" style="color:var(--text-secondary)">角色 <span style="color:var(--accent-orange)">*</span></label>
+          <select x-model="employeeForm.role" class="input-field"><option value="engineer">授权实施/研发人员</option><option value="admin">管理员</option></select>
+        </div>
+      </div>
+      <div class="px-6 py-4 flex justify-end gap-3 border-t" style="border-color:var(--border-default);background:#FAFBFC"><button @click="employeeModalOpen = false" class="btn btn-outline">取消</button><button @click="saveEmployee()" class="btn btn-primary" x-text="employeeModalMode === 'add' ? '确认新增' : '保存修改'"></button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PAGE: SYSTEM SETTINGS (NEW)
+     ════════════════════════════════════════════════════════════════════════ -->
+<div x-show="page === 'settings'" x-cloak class="px-4 md:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+  <div class="mb-6">
+    <div class="flex items-center gap-3">
+      <span class="num-badge" style="background:var(--accent-blue)">06</span>
+      <div><h1 class="text-2xl font-bold" style="color:var(--text-primary)">系统设置</h1><p class="text-sm mt-0.5" style="color:var(--text-secondary)">运维配置与参数管理</p></div>
+    </div>
+  </div>
+  <div class="flex rounded-lg overflow-hidden border mb-6" style="border-color:var(--border-default);width:fit-content">
+    <button @click="settingsTab = 'params'" class="px-5 py-2.5 text-sm font-medium transition-colors" :class="settingsTab === 'params' ? 'text-white' : ''" :style="settingsTab === 'params' ? 'background:var(--accent-orange)' : 'color:var(--text-secondary)'">系统参数</button>
+    <button @click="settingsTab = 'model'" class="px-5 py-2.5 text-sm font-medium transition-colors" :class="settingsTab === 'model' ? 'text-white' : ''" :style="settingsTab === 'model' ? 'background:var(--accent-orange)' : 'color:var(--text-secondary)'">模型成本配置</button>
+  </div>
+
+  <div x-show="settingsTab === 'params'">
+    <div class="card-static p-6 max-w-lg border border-[#F2F4F6]">
+      <div class="flex items-center gap-2 mb-1"><div class="w-1 h-5 rounded-full" style="background:var(--accent-orange)"></div><h3 class="text-sm font-semibold" style="color:var(--text-primary)">测试 Key 默认额度</h3></div>
+      <p class="text-xs mb-4 ml-3" style="color:var(--text-secondary)">影响单个生成和批量生成测试 Key 时的额度默认值</p>
+      <div class="flex items-center gap-3 ml-3"><input type="number" x-model="settingsForm.testKeyDefaultQuota" min="0.01" step="0.01" class="input-field" style="max-width:160px"><span class="text-sm font-medium" style="color:var(--text-secondary)">元</span></div>
+      <button @click="saveSettings()" class="btn btn-primary mt-5">保存设置</button>
+    </div>
+  </div>
+
+  <div x-show="settingsTab === 'model'">
+    <div class="card-static p-6 max-w-2xl border border-[#F2F4F6]">
+      <div class="flex items-center gap-2 mb-1"><div class="w-1 h-5 rounded-full" style="background:var(--accent-blue)"></div><h3 class="text-sm font-semibold" style="color:var(--text-primary)">DeepSeek V4 Flash</h3></div>
+      <p class="text-xs mb-5 ml-3" style="color:var(--text-secondary)">模型标识：deepseek-v4-flash · 计费依据为上游 API 返回的 usage 对象，不加价</p>
+      <div class="space-y-0 ml-3">
+        <div class="flex items-center justify-between py-4 border-b" style="border-color:var(--border-light)">
+          <div><div class="text-sm font-medium" style="color:var(--text-primary)">输入 Token 单价（缓存命中）</div><div class="text-xs mt-0.5" style="color:var(--text-muted)">元/百万Tokens</div></div>
+          <input type="number" x-model="settingsForm.modelCost.inputPriceCacheHit" min="0" step="0.01" class="input-field text-right font-semibold" style="max-width:120px;font-family:var(--font-mono)">
+        </div>
+        <div class="flex items-center justify-between py-4 border-b" style="border-color:var(--border-light)">
+          <div><div class="text-sm font-medium" style="color:var(--text-primary)">输入 Token 单价（缓存未命中）</div><div class="text-xs mt-0.5" style="color:var(--text-muted)">元/百万Tokens</div></div>
+          <input type="number" x-model="settingsForm.modelCost.inputPriceCacheMiss" min="0" step="0.01" class="input-field text-right font-semibold" style="max-width:120px;font-family:var(--font-mono)">
+        </div>
+        <div class="flex items-center justify-between py-4 border-b" style="border-color:var(--border-light)">
+          <div><div class="text-sm font-medium" style="color:var(--text-primary)">输出 Token 单价</div><div class="text-xs mt-0.5" style="color:var(--text-muted)">元/百万Tokens（Thinking Token 同价）</div></div>
+          <input type="number" x-model="settingsForm.modelCost.outputPrice" min="0" step="0.01" class="input-field text-right font-semibold" style="max-width:120px;font-family:var(--font-mono)">
+        </div>
+      </div>
+      <button @click="saveSettings()" class="btn btn-primary mt-5">保存全部</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- END main content -->
+</div><!-- END app shell -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.data('app', () => ({
+
+    // === CORE ===
+    page: 'login',
+    mobileMenu: false,
+    chartHover: null,
+    toasts: [],
+    toastId: 0,
+
+    currentUser: {
+      name: '孙楠迪',
+      email: 'sun@chendurobot.com',
+      role: 'admin',
+      initials: '孙',
+    },
+
+    sidebarNav: [
+      { name: '统计看板', page: 'dashboard', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>', roles: ['admin','engineer'] },
+      { name: 'Key 管理', page: 'keys', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>', roles: ['admin','engineer'] },
+      { name: '客户库', page: 'customers', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>', roles: ['admin','engineer'] },
+      { name: '员工管理', page: 'employees', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>', roles: ['admin'] },
+      { name: '系统设置', page: 'settings', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>', roles: ['admin'] },
+    ],
+
+    initApp() {
+      if (!this.keys.length) this.keys = this.initKeys();
+      this.chartData = this.generateChartData();
+      this.$watch('page', () => { this.mobileMenu = false; window.scrollTo(0,0); });
+    },
+
+    visibleNav() { return this.sidebarNav.filter(i => i.roles.includes(this.currentUser.role)); },
+    roleLabel(role) { return role === 'admin' ? '管理员' : '授权实施'; },
+    todayStr() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
+
+    navigate(target) {
+      const nav = this.sidebarNav.find(i => i.page === target);
+      if (nav && !nav.roles.includes(this.currentUser.role)) { this.showToast('无权限访问此页面', 'error'); return; }
+      this.keyDrawer = null; this.customerAddOpen = false; this.customerDetailOpen = false;
+      this.detailOpen = false; this.employeeModalOpen = false;
+      this.page = target;
+    },
+
+    handleLogout() {
+      this.page = 'login'; this.loginForm = { email: '', password: '', showPw: false };
+      this.loginError = ''; this.loginLoading = false; this.showChangePw = false; this.keySelected = [];
+    },
+
+    showToast(message, type) {
+      const id = ++this.toastId; this.toasts.push({ id, message, type });
+      setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 3000);
+    },
+
+    // === LOGIN ===
+    loginForm: { email: '', password: '', showPw: false },
+    loginLoading: false, loginError: '',
+    showChangePw: false,
+    pwForm: { current: '', newPw: '', confirm: '' },
+    pwLoading: false, pwError: '',
+
+    handleLogin() {
+      this.loginError = '';
+      if (!this.loginForm.email || !this.loginForm.password) { this.loginError = '请填写邮箱和密码'; return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.loginForm.email)) { this.loginError = '请输入有效的邮箱地址'; return; }
+      this.loginLoading = true;
+      setTimeout(() => { this.loginLoading = false; this.showChangePw = true; }, 1200);
+    },
+
+    submitChangePw() {
+      this.pwError = '';
+      const pw = this.pwForm.newPw;
+      if (!this.pwForm.current || !pw || !this.pwForm.confirm) { this.pwError = '请填写所有密码字段'; return; }
+      if (pw.length < 8 || pw.length > 20) { this.pwError = '新密码需 8-20 位'; return; }
+      if (!/[a-zA-Z]/.test(pw) || !/[0-9]/.test(pw)) { this.pwError = '新密码需包含至少1个字母和1个数字'; return; }
+      if (pw !== this.pwForm.confirm) { this.pwError = '两次输入的新密码不一致'; return; }
+      this.pwLoading = true;
+      setTimeout(() => { this.pwLoading = false; this.showChangePw = false; this.page = 'dashboard'; this.showToast('密码修改成功', 'success'); }, 800);
+    },
+
+    // === DASHBOARD ===
+    chartRange: '近7天',
+    chartData: [],
+    dashboard: {
+      stats: { todayConsumption: 1280.50, consumptionTrend: 12.5, thinkingConsumption: 105.20, thinkingRatio: 8.2, activeKeys: 86, activeKeyRatio: 72, todayRequests: 12458, requestTrend: 8.3 },
+      thinking: { tokenCount: 386200, amount: 0.77, ratio: 8.2 }
+    },
+
+    recentActivity: [
+      { initials: '张', avatarBg: '#2B5C8F', text: '<b>张工</b> 批量生成了 <b>50</b> 个测试 Key 给 <b style="color:#F47920">杭州讯捷科技</b>', time: '14:32:18', tag: '批量生成', tagClass: 'tag-warning' },
+      { initials: '李', avatarBg: '#52A34D', text: '<b>李工</b> 停用了客户 <b>上海某电商平台</b> 的 3 个 Key', time: '13:15:42', tag: '停用', tagClass: 'tag-danger' },
+      { initials: '孙', avatarBg: '#F47920', text: '<b>孙楠迪</b> 新增客户 <b style="color:#F47920">深圳智算科技</b>', time: '11:08:05', tag: '新增', tagClass: 'tag-info' },
+      { initials: '张', avatarBg: '#2B5C8F', text: '<b>张工</b> 为客户 <b>北京深度未来</b> 生成了 1 个永久 Key', time: '10:22:30', tag: '新建', tagClass: 'tag-info' },
+      { initials: '孙', avatarBg: '#F47920', text: '<b>孙楠迪</b> 修改了 <b>测试 Key 默认额度</b> 为 2.00 元', time: '09:45:11', tag: '设置', tagClass: 'tag-success' },
+    ],
+
+    generateChartData() {
+      const days = ['05-12','05-13','05-14','05-15','05-16','05-17','05-18'];
+      return days.map(label => {
+        const base = 800 + Math.random() * 600;
+        const think = base * (0.05 + Math.random() * 0.1);
+        return { label, amount: base, think, amountPct: Math.round(base/2100*100), thinkPct: Math.round(think/base*100) };
+      });
+    },
+
+    get maxChartAmount() { return Math.max(...this.chartData.map(d => d.amount)) * 1.15; },
+
+    switchChartRange(range) {
+      this.chartRange = range === '7d' ? '近7天' : '近30天';
+      this.chartData = this.generateChartData();
+    },
+
+    // === KEY MANAGEMENT ===
+    keys: [],
+    initKeys() {
+      const customers = ['杭州讯捷科技','北京深度未来','上海某电商平台','深圳智算科技','南京数智科技','成都云创科技'];
+      const creators = ['孙楠迪','张工','李工','王工','赵工'];
+      const out = [];
+      for (let i = 0; i < 40; i++) {
+        const type = i < 10 ? 'permanent' : 'test';
+        const quota = type === 'test' ? parseFloat((Math.random() * 20 + 2).toFixed(2)) : null;
+        const remaining = quota ? parseFloat((quota * Math.random()).toFixed(2)) : null;
+        const r = () => Math.random().toString(36).substring(2,10);
+        const key = 'sk-' + r() + '-' + r();
+        out.push({
+          id: i + 1, key, preview: key.substring(0, 16) + '…',
+          customer: customers[i % customers.length], type, quota, remaining,
+          status: i % 7 === 0 ? 'disabled' : 'enabled',
+          creator: creators[i % creators.length],
+          date: '2026-05-' + String(Math.min(18, Math.floor(i / 3) + 1)).padStart(2, '0'),
+          thinkingTokens: Math.floor(Math.random() * 50000),
+          thinkingCalls: Math.floor(Math.random() * 200),
+          thinkingAmount: parseFloat((Math.random() * 5).toFixed(2)),
+        });
+      }
+      return out;
+    },
+    keySearch: '', keyFilterType: '', keyFilterStatus: '', keyFilterCreator: '',
+    keySelected: [], keyDrawer: null,
+    singleForm: { customer: '', keyType: 'test', quota: '2.00', note: '', sug: [] },
+    batchForm: { customer: '', keyType: 'test', count: '50', quota: '2.00', note: '', sug: [] },
+    resultOpen: false, resultMsg: '', resultKeys: [],
+    detailOpen: false, detailKey: null,
+
+    filteredKeys() {
+      let k = this.keys;
+      if (this.keySearch) { const q = this.keySearch.toLowerCase(); k = k.filter(x => x.key.toLowerCase().includes(q) || x.customer.toLowerCase().includes(q)); }
+      if (this.keyFilterType) k = k.filter(x => x.type === this.keyFilterType);
+      if (this.keyFilterStatus) k = k.filter(x => x.status === this.keyFilterStatus);
+      if (this.keyFilterCreator) k = k.filter(x => x.creator === this.keyFilterCreator);
+      return k;
+    },
+    selectAll(e) { this.keySelected = e.target.checked ? this.filteredKeys().map(k => k.id) : []; },
+    openSingleDrawer() { this.singleForm = { customer: '', keyType: 'test', quota: String(this.settingsForm.testKeyDefaultQuota), note: '', sug: [] }; this.keyDrawer = 'single'; },
+    openBatchDrawer() { this.batchForm = { customer: '', keyType: 'test', count: '50', quota: String(this.settingsForm.testKeyDefaultQuota), note: '', sug: [] }; this.keyDrawer = 'batch'; },
+    doSuggest(which) {
+      const form = which === 'single' ? this.singleForm : this.batchForm;
+      const val = form.customer.trim();
+      form.sug = val.length >= 2 ? this.customers.filter(c => c.name.toLowerCase().includes(val.toLowerCase())).map(c => c.name) : [];
+    },
+    handleSugEnter(which) {
+      const form = which === 'single' ? this.singleForm : this.batchForm;
+      const val = form.customer.trim();
+      if (val && !this.customers.find(c => c.name === val)) {
+        this.customers.push({ name: val, keyCount: 0, activeKeys: 0, totalConsumption: 0, lastActive: this.todayStr() });
+        this.showToast('已自动创建客户: ' + val, 'info');
+      }
+      form.sug = [];
+    },
+    selectSug(which, name) { const form = which === 'single' ? this.singleForm : this.batchForm; form.customer = name; form.sug = []; },
+    randKey() { const r = () => Math.random().toString(36).substring(2,10); return 'sk-' + r() + '-' + r(); },
+
+    doGenerate() {
+      const f = this.singleForm;
+      if (!f.customer.trim()) { this.showToast('请填写客户名称', 'error'); return; }
+      const type = f.keyType, quota = type === 'test' ? parseFloat(f.quota) || parseFloat(this.settingsForm.testKeyDefaultQuota) : null;
+      const nk = { id: Date.now(), key: this.randKey(), customer: f.customer.trim(), type, quota, remaining: quota, status: 'enabled', creator: this.currentUser.name, date: this.todayStr(), thinkingTokens: 0, thinkingCalls: 0, thinkingAmount: 0 };
+      nk.preview = nk.key.substring(0, 16) + '…';
+      this.keys.unshift(nk);
+      this.updateCustomerStats(f.customer.trim());
+      this.keyDrawer = null;
+      this.showToast('Key 生成成功', 'success');
+    },
+
+    doBatch() {
+      const f = this.batchForm;
+      if (!f.customer.trim()) { this.showToast('请填写客户名称', 'error'); return; }
+      const count = parseInt(f.count);
+      if (count < 10 || count > 100) { this.showToast('数量需在 10-100 之间', 'error'); return; }
+      const type = f.keyType, quota = type === 'test' ? parseFloat(f.quota) || parseFloat(this.settingsForm.testKeyDefaultQuota) : null;
+      const today = this.todayStr(), nks = [];
+      for (let i = 0; i < count; i++) {
+        const key = this.randKey();
+        nks.push({ id: Date.now() + i, key, preview: key.substring(0, 16) + '…', customer: f.customer.trim(), type, quota, remaining: quota, status: 'enabled', creator: this.currentUser.name, date: today, thinkingTokens: 0, thinkingCalls: 0, thinkingAmount: 0 });
+      }
+      this.keys.unshift(...nks);
+      this.updateCustomerStats(f.customer.trim());
+      this.resultMsg = '已成功生成 ' + count + ' 个 Key' + (quota ? '，总额度 ¥' + (quota * count).toFixed(2) + ' 元' : '');
+      this.resultKeys = nks; this.keyDrawer = null; this.resultOpen = true;
+    },
+
+    exportCSV() {
+      const rows = [['Key','客户名称','类型','额度','状态','创建时间']];
+      this.resultKeys.forEach(k => { rows.push([k.key, k.customer, k.type==='permanent'?'永久':'测试', k.type==='permanent'?'无限':'¥'+k.quota, '已启用', k.date]); });
+      const csv = rows.map(r => r.map(c => '"'+c+'"').join(',')).join('\n');
+      const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = (this.batchForm.customer||'客户')+'-Key批量-'+this.todayStr()+'.csv'; a.click();
+      URL.revokeObjectURL(url);
+      this.showToast('CSV 导出成功', 'success');
+    },
+
+    showKeyDetail(k) { this.detailKey = k; this.detailOpen = true; },
+    toggleKeyStatus(k) { k.status = k.status === 'enabled' ? 'disabled' : 'enabled'; this.showToast('Key 已' + (k.status==='enabled'?'启用':'停用'), k.status==='enabled'?'success':'info'); },
+    deleteKey(k) { if (!confirm('确定删除该 Key？此操作不可撤销。')) return; this.keys = this.keys.filter(x => x.id !== k.id); this.showToast('Key 已删除', 'success'); },
+    batchAction(action) {
+      const ts = action === 'enable' ? 'enabled' : 'disabled';
+      this.keys.forEach(k => { if (this.keySelected.includes(k.id)) k.status = ts; });
+      this.showToast('已批量' + (action==='enable'?'启用':'停用') + ' ' + this.keySelected.length + ' 个 Key', 'success');
+      this.keySelected = [];
+    },
+    copyText(text) { navigator.clipboard.writeText(text).then(() => { this.showToast('已复制到剪贴板', 'success'); }).catch(() => { this.showToast('复制失败，请手动复制', 'error'); }); },
+
+    // === CUSTOMERS ===
+    customers: [
+      { name: '杭州讯捷科技', keyCount: 8, activeKeys: 5, totalConsumption: 345.20, lastActive: '2026-05-18' },
+      { name: '北京深度未来', keyCount: 6, activeKeys: 6, totalConsumption: 520.80, lastActive: '2026-05-18' },
+      { name: '上海某电商平台', keyCount: 5, activeKeys: 2, totalConsumption: 128.50, lastActive: '2026-05-17' },
+      { name: '深圳智算科技', keyCount: 7, activeKeys: 4, totalConsumption: 290.00, lastActive: '2026-05-18' },
+      { name: '南京数智科技', keyCount: 4, activeKeys: 4, totalConsumption: 680.30, lastActive: '2026-05-18' },
+      { name: '成都云创科技', keyCount: 3, activeKeys: 0, totalConsumption: 45.60, lastActive: '2026-05-14' },
+      { name: '武汉星河智能', keyCount: 5, activeKeys: 3, totalConsumption: 210.00, lastActive: '2026-05-17' },
+      { name: '广州元计算', keyCount: 2, activeKeys: 2, totalConsumption: 890.10, lastActive: '2026-05-18' },
+    ],
+    customerSearch: '', customerAddOpen: false, customerAddForm: { name: '' }, customerAddError: '',
+    customerDetailOpen: false, customerDetail: null,
+
+    filteredCustomers() { if (!this.customerSearch) return this.customers; const q = this.customerSearch.toLowerCase(); return this.customers.filter(c => c.name.toLowerCase().includes(q)); },
+    totalKeyCount() { return this.keys.length; },
+    activeCustomerCount() { return this.customers.filter(c => c.activeKeys > 0).length; },
+    customerAvatarBg(name) { const colors = ['#F47920','#2B5C8F','#52A34D','#8B96A5','#D4902E','#E06810','#3B6DA8','#3D8B37']; let h = 0; for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h); return colors[Math.abs(h) % colors.length]; },
+    employeeAvatarBg(name) { return this.customerAvatarBg(name); },
+
+    doAddCustomer() {
+      this.customerAddError = '';
+      const name = this.customerAddForm.name.trim();
+      if (!name) { this.customerAddError = '请输入客户名称'; return; }
+      if (this.customers.find(c => c.name === name)) { this.customerAddError = '该客户名称已存在'; return; }
+      this.customers.push({ name, keyCount: 0, activeKeys: 0, totalConsumption: 0, lastActive: this.todayStr() });
+      this.customerAddOpen = false; this.customerAddForm.name = '';
+      this.showToast('客户添加成功', 'success');
+    },
+    showCustomerDetail(c) { this.customerDetail = c; this.customerDetailOpen = true; },
+    customerDetailKeys() { if (!this.customerDetail) return []; return this.keys.filter(k => k.customer === this.customerDetail.name); },
+    updateCustomerStats(cn) { const c = this.customers.find(x => x.name === cn); if (c) { const ck = this.keys.filter(k => k.customer === cn); c.keyCount = ck.length; c.activeKeys = ck.filter(k => k.status === 'enabled').length; c.lastActive = this.todayStr(); } },
+    navigateToCustomer(cn) { this.customerSearch = cn; this.navigate('customers'); },
+    navigateToKeyFilter(cn) { this.keySearch = cn; this.navigate('keys'); },
+
+    // === EMPLOYEES ===
+    employees: [
+      { id: 1, name: '孙楠迪', email: 'sun@chendurobot.com', role: 'admin', status: 'active', createdAt: '2026-05-01' },
+      { id: 2, name: '张工', email: 'zhang@chendurobot.com', role: 'engineer', status: 'active', createdAt: '2026-05-03' },
+      { id: 3, name: '李工', email: 'li@chendurobot.com', role: 'engineer', status: 'active', createdAt: '2026-05-05' },
+      { id: 4, name: '王工', email: 'wang@chendurobot.com', role: 'engineer', status: 'disabled', createdAt: '2026-05-08' },
+      { id: 5, name: '赵工', email: 'zhao@chendurobot.com', role: 'engineer', status: 'active', createdAt: '2026-05-10' },
+    ],
+    employeeSearch: '', employeeModalOpen: false, employeeModalMode: 'add',
+    employeeForm: { id: null, name: '', email: '', password: '', role: 'engineer' },
+    employeeFormError: '',
+
+    filteredEmployees() { if (!this.employeeSearch) return this.employees; const q = this.employeeSearch.toLowerCase(); return this.employees.filter(e => e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q)); },
+    openEmployeeModal(mode, emp) {
+      this.employeeFormError = ''; this.employeeModalMode = mode;
+      if (mode === 'add') this.employeeForm = { id: null, name: '', email: '', password: '', role: 'engineer' };
+      else if (emp) this.employeeForm = { id: emp.id, name: emp.name, email: emp.email, password: '', role: emp.role };
+      this.employeeModalOpen = true;
+    },
+    saveEmployee() {
+      this.employeeFormError = '';
+      const f = this.employeeForm;
+      if (!f.name.trim() || !f.email.trim()) { this.employeeFormError = '请填写姓名和邮箱'; return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) { this.employeeFormError = '请输入有效的邮箱地址'; return; }
+      if (this.employeeModalMode === 'add') {
+        if (!f.password) { this.employeeFormError = '请输入初始密码'; return; }
+        if (f.password.length < 8 || f.password.length > 20) { this.employeeFormError = '密码需 8-20 位'; return; }
+        if (!/[a-zA-Z]/.test(f.password) || !/[0-9]/.test(f.password)) { this.employeeFormError = '密码需包含至少1个字母和1个数字'; return; }
+        if (this.employees.find(e => e.email === f.email)) { this.employeeFormError = '该邮箱已存在'; return; }
+        this.employees.push({ id: Math.max(...this.employees.map(e => e.id)) + 1, name: f.name.trim(), email: f.email.trim(), role: f.role, status: 'active', createdAt: this.todayStr() });
+        this.showToast('员工添加成功', 'success');
+      } else {
+        const emp = this.employees.find(e => e.id === f.id);
+        if (emp) {
+          if (this.employees.find(e => e.email === f.email && e.id !== f.id)) { this.employeeFormError = '该邮箱已被其他员工使用'; return; }
+          emp.name = f.name.trim(); emp.email = f.email.trim(); emp.role = f.role;
+          this.showToast('员工信息已更新', 'success');
+        }
+      }
+      this.employeeModalOpen = false;
+    },
+    toggleEmployeeStatus(emp) { emp.status = emp.status === 'active' ? 'disabled' : 'active'; this.showToast('员工状态已更新', 'info'); },
+
+    // === SETTINGS ===
+    settingsTab: 'params',
+    settingsForm: { testKeyDefaultQuota: 2.00, modelCost: { inputPriceCacheHit: 0.02, inputPriceCacheMiss: 1.00, outputPrice: 2.00 } },
+    saveSettings() { this.showToast('设置已保存', 'success'); },
+
+    // === UTILS ===
+    fmtNum(n) { return n == null ? '0.00' : Number(n).toFixed(2); },
+    fmtInt(n) { return n == null ? '0' : Number(n).toLocaleString(); },
+  }));
+});
+</script>
+</body>
+</html>

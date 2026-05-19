@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户库 - API 中转平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    * { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    body { background: #F8FAFC; }
+    input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px rgba(3, 105, 161, 0.3); }
+    .sidebar-link { transition: all 0.2s ease; }
+    .sidebar-link:hover { background: rgba(15, 23, 42, 0.06); }
+    .sidebar-link.active { background: #0F172A; color: white; }
+    .sidebar-link.active svg { stroke: white; }
+    .row-hover { transition: background 0.15s ease; }
+    .row-hover:hover { background: #F8FAFC; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    .drawer-overlay { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); }
+    .tag-active { background: #ECFDF5; color: #065F46; }
+    .tag-inactive { background: #F1F5F9; color: #64748B; }
+    .stat-card { transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.12); }
+  </style>
+</head>
+<body>
+
+<div x-data="app" class="min-h-screen bg-[#F8FAFC] flex">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="hidden lg:flex lg:flex-col w-56 bg-white border-r border-[#E2E8F0] shrink-0">
+    <div class="h-14 flex items-center justify-between px-4 border-b border-[#E2E8F0] relative" @click.outside="userMenuOpen = false">
+      <div class="flex items-center gap-2">
+        <div class="size-6 rounded-md bg-[#0F172A] flex items-center justify-center">
+          <svg class="size-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+        </div>
+        <span class="font-semibold text-sm text-[#0F172A] tracking-tight">API 中转平台</span>
+      </div>
+      <button @click="userMenuOpen = !userMenuOpen" class="size-7 rounded-full bg-[#0369A1] flex items-center justify-center text-white text-[11px] font-semibold hover:ring-2 ring-[#0369A1]/30 transition-all cursor-pointer">孙</button>
+      <div x-show="userMenuOpen" x-cloak x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute top-full left-3 right-3 mt-1 bg-white rounded-xl shadow-lg border border-[#E2E8F0] py-1.5 z-50">
+        <div class="px-3 py-2 border-b border-[#F1F5F9]">
+          <div class="text-sm font-medium text-[#0F172A]">孙楠迪</div>
+          <div class="text-xs text-[#64748B]">管理员</div>
+        </div>
+        <button @click="userMenuOpen = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#64748B] hover:bg-[#F8FAFC] transition-colors cursor-pointer">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+          个人资料
+        </button>
+        <button @click="handleLogout" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+          退出登录
+        </button>
+      </div>
+    </div>
+    <nav class="flex-1 p-2.5 space-y-0.5">
+      <a href="01-登录与看板.html" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-[#64748B]">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z"/></svg>
+        <span>统计看板</span>
+      </a>
+      <a href="02-Key管理.html" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-[#64748B]">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+        <span>Key 管理</span>
+      </a>
+      <a href="#" class="sidebar-link active flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+        <span>客户库</span>
+      </a>
+      <a href="#" @click.prevent="page='employees'" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-[#64748B]">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+        <span>员工管理</span>
+      </a>
+      <a href="#" @click.prevent="page='settings'" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-[#64748B]">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>系统设置</span>
+      </a>
+    </nav>
+    <div class="p-3 border-t border-[#E2E8F0] flex items-center gap-2.5">
+      <div class="size-7 rounded-full bg-[#0369A1] flex items-center justify-center text-white text-[11px] font-semibold">孙</div>
+      <div class="flex-1"><div class="text-sm font-medium text-[#0F172A]">孙楠迪</div><div class="text-xs text-[#64748B]">管理员</div></div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="flex-1 min-w-0">
+    <div class="px-4 md:px-6 lg:px-8 py-6 lg:py-8 max-w-7xl mx-auto">
+
+      <!-- Page Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-xl font-semibold text-[#0F172A] tracking-tight">客户库</h1>
+          <p class="text-sm text-[#64748B] mt-0.5">管理所有客户组织</p>
+        </div>
+        <button @click="openAddDrawer" class="h-9 px-4 rounded-lg bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1E293B] active:scale-[0.98] cursor-pointer flex items-center gap-2 transition-all">
+          <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          新增客户
+        </button>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="stat-card bg-white rounded-xl border border-[#E2E8F0] p-4">
+          <div class="flex items-center gap-3">
+            <div class="size-10 rounded-lg bg-blue-50 flex items-center justify-center">
+              <svg class="size-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18"/></svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-[#0F172A]" x-text="customers.length"></div>
+              <div class="text-xs text-[#64748B]">客户总数</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card bg-white rounded-xl border border-[#E2E8F0] p-4">
+          <div class="flex items-center gap-3">
+            <div class="size-10 rounded-lg bg-green-50 flex items-center justify-center">
+              <svg class="size-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-[#0F172A]" x-text="totalKeys"></div>
+              <div class="text-xs text-[#64748B]">关联 Key 总数</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card bg-white rounded-xl border border-[#E2E8F0] p-4">
+          <div class="flex items-center gap-3">
+            <div class="size-10 rounded-lg bg-amber-50 flex items-center justify-center">
+              <svg class="size-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z"/></svg>
+            </div>
+            <div>
+              <div class="text-2xl font-bold text-[#0F172A]" x-text="activeCustomers"></div>
+              <div class="text-xs text-[#64748B]">活跃客户（当月有调用）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Table -->
+      <div class="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden">
+        <!-- Search bar -->
+        <div class="px-4 md:px-6 py-3 border-b border-[#E2E8F0]">
+          <div class="relative max-w-xs">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            <input type="text" x-model="search" placeholder="搜索客户名称..." class="w-full h-9 pl-9 pr-3 rounded-lg border border-[#E2E8F0] text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-white">
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                <th class="text-left px-4 md:px-6 py-3 font-medium text-[#64748B]">客户名称</th>
+                <th class="text-center px-4 md:px-6 py-3 font-medium text-[#64748B] w-24">Key 数量</th>
+                <th class="text-center px-4 md:px-6 py-3 font-medium text-[#64748B] w-20">活跃</th>
+                <th class="text-right px-4 md:px-6 py-3 font-medium text-[#64748B] w-28">总消耗</th>
+                <th class="text-right px-4 md:px-6 py-3 font-medium text-[#64748B] w-32">最近活跃</th>
+                <th class="text-center px-4 md:px-6 py-3 font-medium text-[#64748B] w-24">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="c in filteredCustomers" :key="c.id">
+                <tr class="border-b border-[#F1F5F9] row-hover">
+                  <td class="px-4 md:px-6 py-3">
+                    <div class="flex items-center gap-2.5">
+                      <div class="size-8 rounded-lg flex items-center justify-center text-xs font-semibold" :class="c.avatarBg">
+                        <span x-text="c.name.charAt(0)"></span>
+                      </div>
+                      <span class="font-medium text-[#0F172A]" x-text="c.name"></span>
+                    </div>
+                  </td>
+                  <td class="px-4 md:px-6 py-3 text-center">
+                    <span class="font-medium text-[#0F172A]" x-text="c.keyCount"></span>
+                  </td>
+                  <td class="px-4 md:px-6 py-3 text-center">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" :class="c.activeKeys > 0 ? 'tag-active' : 'tag-inactive'">
+                      <span class="size-1.5 rounded-full" :class="c.activeKeys > 0 ? 'bg-[#10B981]' : 'bg-[#94A3B8]'"></span>
+                      <span x-text="c.activeKeys"></span>
+                    </span>
+                  </td>
+                  <td class="px-4 md:px-6 py-3 text-right">
+                    <span class="font-medium text-[#0F172A]" x-text="'¥' + c.totalConsumption.toFixed(2)"></span>
+                  </td>
+                  <td class="px-4 md:px-6 py-3 text-right">
+                    <span class="text-[#64748B] text-xs" x-text="c.lastActive || '—'"></span>
+                  </td>
+                  <td class="px-4 md:px-6 py-3 text-center">
+                    <button @click="showDetail(c)" class="text-[#0369A1] hover:text-[#0284C7] text-xs font-medium cursor-pointer hover:underline">查看详情</button>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="filteredCustomers.length === 0">
+                <td colspan="6" class="px-6 py-12 text-center text-sm text-[#94A3B8]">
+                  <template x-if="search">未找到匹配"<span class="text-[#64748B] font-medium" x-text="search"></span>"的客户</template>
+                  <template x-if="!search">暂无客户数据，点击右上角"新增客户"添加</template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════ DRAWER: Add Customer ═══════════════════ -->
+  <div x-show="addOpen" x-cloak class="fixed inset-0 z-50" @click.self="addOpen = false">
+    <div class="absolute inset-0 drawer-overlay"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
+      <!-- Drawer header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
+        <h2 class="text-lg font-semibold text-[#0F172A]">新增客户</h2>
+        <button @click="addOpen = false" class="size-8 rounded-lg hover:bg-[#F1F5F9] flex items-center justify-center cursor-pointer">
+          <svg class="size-5 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <!-- Drawer body -->
+      <form @submit.prevent="doAdd" class="flex-1 p-6 space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-[#334155] mb-1.5">客户名称</label>
+          <input type="text" x-model="addForm.name" placeholder="输入公司/组织名称" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8]" required>
+          <p class="text-xs text-[#94A3B8] mt-1">客户名称需唯一，不可与已有客户重复</p>
+        </div>
+        <div x-show="addError" x-transition class="text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg" x-text="addError"></div>
+        <div class="pt-4 flex gap-3">
+          <button type="button" @click="addOpen = false" class="flex-1 h-10 rounded-lg border border-[#E2E8F0] bg-white text-sm font-medium text-[#64748B] hover:bg-[#F8FAFC] cursor-pointer">取消</button>
+          <button type="submit" class="flex-1 h-10 rounded-lg bg-[#0F172A] text-white text-sm font-semibold hover:bg-[#1E293B] active:scale-[0.98] cursor-pointer">确认添加</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ DRAWER: Customer Detail ═══════════════════ -->
+  <div x-show="detailOpen" x-cloak class="fixed inset-0 z-50" @click.self="detailOpen = false">
+    <div class="absolute inset-0 drawer-overlay"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-2xl bg-white shadow-2xl flex flex-col" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
+      <!-- Detail header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-[#E2E8F0]">
+        <div>
+          <h2 class="text-lg font-semibold text-[#0F172A]" x-text="detail ? detail.name : ''"></h2>
+          <p class="text-sm text-[#64748B] mt-0.5">客户详情</p>
+        </div>
+        <button @click="detailOpen = false" class="size-8 rounded-lg hover:bg-[#F1F5F9] flex items-center justify-center cursor-pointer">
+          <svg class="size-5 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <!-- Detail body -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <template x-if="detail">
+          <div>
+            <!-- Summary cards -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <div class="bg-[#F8FAFC] rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-[#0F172A]" x-text="detail.keyCount"></div>
+                <div class="text-xs text-[#64748B] mt-1">Key 总数</div>
+              </div>
+              <div class="bg-[#F8FAFC] rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-[#0F172A]" x-text="detail.activeKeys"></div>
+                <div class="text-xs text-[#64748B] mt-1">活跃 Key</div>
+              </div>
+              <div class="bg-[#F8FAFC] rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-[#0F172A]" x-text="'¥' + detail.totalConsumption.toFixed(2)"></div>
+                <div class="text-xs text-[#64748B] mt-1">总消耗</div>
+              </div>
+            </div>
+
+            <!-- Key list -->
+            <h3 class="text-sm font-semibold text-[#0F172A] mb-3">关联 Key 列表</h3>
+            <div class="border border-[#E2E8F0] rounded-xl overflow-hidden">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <th class="text-left px-4 py-2.5 font-medium text-[#64748B]">Key</th>
+                    <th class="text-center px-4 py-2.5 font-medium text-[#64748B]">类型</th>
+                    <th class="text-center px-4 py-2.5 font-medium text-[#64748B]">状态</th>
+                    <th class="text-right px-4 py-2.5 font-medium text-[#64748B]">额度</th>
+                    <th class="text-right px-4 py-2.5 font-medium text-[#64748B]">剩余</th>
+                    <th class="text-right px-4 py-2.5 font-medium text-[#64748B]">创建者</th>
+                    <th class="text-right px-4 py-2.5 font-medium text-[#64748B]">创建时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="k in detailKeys" :key="k.id">
+                    <tr class="border-b border-[#F1F5F9] row-hover">
+                      <td class="px-4 py-2.5">
+                        <div class="flex items-center gap-2">
+                          <code class="text-xs font-mono text-[#0F172A]" x-text="k.preview"></code>
+                          <button @click="copyText(k.key)" class="shrink-0 size-6 rounded bg-[#F1F5F9] hover:bg-[#E2E8F0] flex items-center justify-center cursor-pointer" title="复制完整Key">
+                            <svg class="size-3 text-[#64748B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-4 py-2.5 text-center">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium" :class="k.type === 'permanent' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'" x-text="k.type === 'permanent' ? '永久' : '测试'"></span>
+                      </td>
+                      <td class="px-4 py-2.5 text-center">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" :class="k.status === 'enabled' ? 'tag-active' : 'bg-red-50 text-red-700'">
+                          <span class="size-1.5 rounded-full" :class="k.status === 'enabled' ? 'bg-[#10B981]' : 'bg-[#EF4444]'"></span>
+                          <span x-text="k.status === 'enabled' ? '已启用' : '已停用'"></span>
+                        </span>
+                      </td>
+                      <td class="px-4 py-2.5 text-right font-medium text-[#0F172A]" x-text="k.type==='permanent' ? '无限' : '¥'+k.quota.toFixed(2)"></td>
+                      <td class="px-4 py-2.5 text-right font-medium" :class="k.remaining <= 0 && k.type==='test' ? 'text-red-500' : 'text-[#0F172A]'" x-text="k.type==='permanent' ? '∞' : '¥'+k.remaining.toFixed(2)"></td>
+                      <td class="px-4 py-2.5 text-right text-[#64748B]" x-text="k.creator"></td>
+                      <td class="px-4 py-2.5 text-right text-[#64748B] text-xs" x-text="k.date"></td>
+                    </tr>
+                  </template>
+                  <tr x-show="detailKeys.length === 0">
+                    <td colspan="7" class="px-6 py-8 text-center text-sm text-[#94A3B8]">该客户暂无关联 Key</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Jump link -->
+            <div class="mt-4 text-right" x-show="detailKeys.length > 0">
+              <a href="02-Key管理.html" class="text-sm text-[#0369A1] hover:text-[#0284C7] font-medium inline-flex items-center gap-1">
+                在 Key 管理中查看全部
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+              </a>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── Customer avatar color palette ───
+const avatarColors = [
+  'bg-blue-100 text-blue-600',
+  'bg-amber-100 text-amber-600',
+  'bg-green-100 text-green-600',
+  'bg-purple-100 text-purple-600',
+  'bg-rose-100 text-rose-600',
+  'bg-cyan-100 text-cyan-600',
+  'bg-indigo-100 text-indigo-600',
+  'bg-teal-100 text-teal-600',
+];
+
+// ─── Mock Key data (shared across customers) ───
+const allKeyData = [
+  { id: 1, key: 'sk-a1b2c3d4-e5f6g7h8', type: 'test', quota: 2.00, remaining: 0.85, status: 'enabled', creator: '孙楠迪', date: '2026-05-14', customerId: 1 },
+  { id: 2, key: 'sk-i9j0k1l2-m3n4o5p6', type: 'permanent', quota: null, remaining: null, status: 'enabled', creator: '张工', date: '2026-05-13', customerId: 1 },
+  { id: 3, key: 'sk-q7r8s9t0-u1v2w3x4', type: 'test', quota: 2.00, remaining: 0.00, status: 'disabled', creator: '李工', date: '2026-05-12', customerId: 1 },
+  { id: 4, key: 'sk-y5z6a7b8-c9d0e1f2', type: 'test', quota: 2.00, remaining: 1.50, status: 'enabled', creator: '孙楠迪', date: '2026-05-14', customerId: 2 },
+  { id: 5, key: 'sk-g3h4i5j6-k7l8m9n0', type: 'permanent', quota: null, remaining: null, status: 'enabled', creator: '张工', date: '2026-05-11', customerId: 2 },
+  { id: 6, key: 'sk-o1p2q3r4-s5t6u7v8', type: 'test', quota: 5.00, remaining: 3.20, status: 'enabled', creator: '王工', date: '2026-05-14', customerId: 3 },
+  { id: 7, key: 'sk-w9x0y1z2-a3b4c5d6', type: 'test', quota: 2.00, remaining: 1.00, status: 'enabled', creator: '孙楠迪', date: '2026-05-13', customerId: 3 },
+  { id: 8, key: 'sk-e7f8g9h0-i1j2k3l4', type: 'permanent', quota: null, remaining: null, status: 'enabled', creator: '李工', date: '2026-05-10', customerId: 4 },
+  { id: 9, key: 'sk-m5n6o7p8-q9r0s1t2', type: 'test', quota: 2.00, remaining: 0.35, status: 'enabled', creator: '孙楠迪', date: '2026-05-14', customerId: 5 },
+  { id: 10, key: 'sk-u3v4w5x6-y7z8a9b0', type: 'test', quota: 2.00, remaining: 2.00, status: 'enabled', creator: '赵工', date: '2026-05-14', customerId: 5 },
+  { id: 11, key: 'sk-c1d2e3f4-g5h6i7j8', type: 'permanent', quota: null, remaining: null, status: 'enabled', creator: '张工', date: '2026-05-09', customerId: 6 },
+  { id: 12, key: 'sk-k9l0m1n2-o3p4q5r6', type: 'test', quota: 10.00, remaining: 7.80, status: 'enabled', creator: '陈工', date: '2026-05-14', customerId: 6 },
+  { id: 13, key: 'sk-s7t8u9v0-w1x2y3z4', type: 'test', quota: 2.00, remaining: 2.00, status: 'enabled', creator: '孙楠迪', date: '2026-05-14', customerId: 7 },
+  { id: 14, key: 'sk-a5b6c7d8-e9f0g1h2', type: 'test', quota: 2.00, remaining: 1.20, status: 'enabled', creator: '王工', date: '2026-05-12', customerId: 8 },
+];
+
+// ─── Customer data ───
+const customerData = [
+  { id: 1, name: '明远科技', avatarBg: avatarColors[0] },
+  { id: 2, name: '恒通数据', avatarBg: avatarColors[1] },
+  { id: 3, name: '云智科技', avatarBg: avatarColors[2] },
+  { id: 4, name: '富士康精密', avatarBg: avatarColors[3] },
+  { id: 5, name: '华睿智能', avatarBg: avatarColors[4] },
+  { id: 6, name: '博创科技', avatarBg: avatarColors[5] },
+  { id: 7, name: '星辰数据', avatarBg: avatarColors[6] },
+  { id: 8, name: '鼎新互联', avatarBg: avatarColors[7] },
+];
+
+// ─── Compute derived customer stats ───
+function enrichCustomers() {
+  return customerData.map(c => {
+    const keys = allKeyData.filter(k => k.customerId === c.id);
+    const enabledKeys = keys.filter(k => k.status === 'enabled');
+    const activeKeys = enabledKeys.length;
+    const totalConsumption = keys.reduce((sum, k) => {
+      if (k.type === 'test') return sum + (k.quota - k.remaining);
+      return sum + 0;
+    }, 0);
+    const lastActiveKey = [...keys].sort((a, b) => b.date.localeCompare(a.date))[0];
+    return {
+      ...c,
+      keyCount: keys.length,
+      activeKeys,
+      totalConsumption,
+      lastActive: lastActiveKey ? lastActiveKey.date : null,
+    };
+  });
+}
+
+Alpine.data('app', () => ({
+  userMenuOpen: false,
+  search: '',
+  addOpen: false,
+  addForm: { name: '' },
+  addError: '',
+  detailOpen: false,
+  detail: null,
+
+  customers: enrichCustomers(),
+
+  // ── Computed ──
+  get filteredCustomers() {
+    if (!this.search) return this.customers;
+    const q = this.search.toLowerCase();
+    return this.customers.filter(c => c.name.toLowerCase().includes(q));
+  },
+
+  get totalKeys() {
+    return this.customers.reduce((s, c) => s + c.keyCount, 0);
+  },
+
+  get activeCustomers() {
+    return this.customers.filter(c => c.activeKeys > 0).length;
+  },
+
+  get detailKeys() {
+    if (!this.detail) return [];
+    return allKeyData
+      .filter(k => k.customerId === this.detail.id)
+      .map(k => ({
+        ...k,
+        preview: k.key.slice(0, 16) + '…',
+      }));
+  },
+
+  // ── Methods ──
+  openAddDrawer() {
+    this.addForm = { name: '' };
+    this.addError = '';
+    this.addOpen = true;
+  },
+
+  doAdd() {
+    this.addError = '';
+    const name = this.addForm.name.trim();
+    if (!name) return (this.addError = '请输入客户名称');
+    if (this.customers.some(c => c.name === name)) return (this.addError = '该客户名称已存在');
+    const newId = Math.max(...customerData.map(c => c.id), 0) + 1;
+    customerData.push({ id: newId, name, avatarBg: avatarColors[newId % avatarColors.length] });
+    this.customers = enrichCustomers();
+    this.addOpen = false;
+  },
+
+  showDetail(c) {
+    this.detail = c;
+    this.detailOpen = true;
+  },
+
+  copyText(t) {
+    navigator.clipboard.writeText(t).then(() => alert('已复制'));
+  },
+
+  handleLogout() {
+    this.userMenuOpen = false;
+    window.location.href = '01-登录与看板.html';
+  },
+}));
+</script>
+</body>
+</html>

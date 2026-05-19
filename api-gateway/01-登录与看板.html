@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 中转平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    * { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+    body { background: #F8FAFC; }
+    
+    /* Smooth page transitions */
+    .page-enter { opacity: 0; transform: translateY(12px); }
+    .page-enter-active { opacity: 1; transform: translateY(0); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    
+    /* Card hover */
+    .stat-card { transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.12); }
+    
+    /* Sidebar */
+    .sidebar-link { transition: all 0.2s ease; }
+    .sidebar-link:hover { background: rgba(15, 23, 42, 0.06); }
+    .sidebar-link.active { background: #0F172A; color: white; }
+    .sidebar-link.active svg { stroke: white; }
+    
+    /* Chart bar animation */
+    .chart-bar { transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    
+    /* Staggered card animation */
+    .stagger-enter { opacity: 0; transform: translateY(16px); }
+    .stagger-enter-active { opacity: 1; transform: translateY(0); }
+    
+    /* Modal backdrop */
+    .modal-backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+    /* Plus Jakarta Sans specific weights */
+    .font-extralight { font-weight: 200; }
+    .font-light { font-weight: 300; }
+    .font-normal { font-weight: 400; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-extrabold { font-weight: 800; }
+
+    /* Input focus */
+    input:focus { outline: none; box-shadow: 0 0 0 2px rgba(3, 105, 161, 0.3); }
+  </style>
+</head>
+<body>
+
+<div x-data="app()" class="min-h-screen bg-[#F8FAFC]">
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- PAGE: LOGIN -->
+  <!-- ════════════════════════════════════════ -->
+  <div x-show="page === 'login'" x-transition:enter="page-enter-active" class="min-h-screen flex">
+    
+    <!-- Left: Brand -->
+    <div class="hidden lg:flex lg:w-1/2 bg-[#0F172A] relative overflow-hidden items-center justify-center">
+      <!-- Decorative large circle -->
+      <div class="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-[#1E293B] opacity-50"></div>
+      <div class="absolute -bottom-32 -left-20 w-[350px] h-[350px] rounded-full bg-[#0369A1]/10"></div>
+      <div class="absolute top-1/3 left-1/4 w-2 h-2 rounded-full bg-[#0369A1]/40"></div>
+      <div class="absolute top-1/2 right-1/4 w-3 h-3 rounded-full bg-[#0369A1]/20"></div>
+      
+      <div class="relative z-10 text-center px-12">
+        <div class="text-5xl font-extrabold tracking-tight text-white mb-4">
+          API 中转平台
+        </div>
+        <div class="h-px w-16 bg-[#0369A1] mx-auto mb-6"></div>
+        <p class="text-[#94A3B8] text-lg font-light tracking-wide">
+          极简 · 高效 · 可度量
+        </p>
+        <!-- Decorative grid dots -->
+        <div class="mt-16 grid grid-cols-6 gap-3 opacity-20 max-w-xs mx-auto">
+          <template x-for="i in 36" :key="i">
+            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Form -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center px-6 lg:px-16">
+      <div class="w-full max-w-sm">
+        
+        <!-- Mobile brand -->
+        <div class="lg:hidden text-center mb-10">
+          <div class="text-3xl font-extrabold text-[#0F172A] tracking-tight">API 中转平台</div>
+          <div class="h-px w-10 bg-[#0369A1] mx-auto mt-3"></div>
+        </div>
+
+        <div class="mb-8">
+          <h1 class="text-2xl font-semibold text-[#0F172A] tracking-tight">登录</h1>
+          <p class="text-sm text-[#64748B] mt-1.5">请输入您的账号信息</p>
+        </div>
+
+        <form @submit.prevent="handleLogin" class="space-y-5">
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-medium text-[#334155] mb-1.5">邮箱</label>
+            <input 
+              type="email" 
+              x-model="loginForm.email"
+              placeholder="you@company.com"
+              class="w-full h-11 px-3.5 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A] text-sm placeholder:text-[#94A3B8] transition-colors focus:border-[#0369A1]"
+              :class="{ 'border-red-400': loginError }"
+              required
+            >
+          </div>
+          <!-- Password -->
+          <div>
+            <label class="block text-sm font-medium text-[#334155] mb-1.5">密码</label>
+            <div class="relative">
+              <input 
+                :type="loginForm.showPw ? 'text' : 'password'"
+                x-model="loginForm.password"
+                placeholder="········"
+                class="w-full h-11 px-3.5 rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A] text-sm placeholder:text-[#94A3B8] transition-colors focus:border-[#0369A1] pr-10"
+                :class="{ 'border-red-400': loginError }"
+                required
+              >
+              <button type="button" @click="loginForm.showPw = !loginForm.showPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] cursor-pointer">
+                <svg x-show="!loginForm.showPw" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                <svg x-show="loginForm.showPw" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div x-show="loginError" x-transition class="flex items-center gap-2 text-red-500 text-sm bg-red-50 px-3.5 py-2.5 rounded-lg">
+            <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+            <span x-text="loginError"></span>
+          </div>
+
+          <!-- Submit -->
+          <button 
+            type="submit"
+            :disabled="loginLoading"
+            class="w-full h-11 rounded-lg bg-[#0369A1] text-white text-sm font-semibold tracking-wide transition-all duration-200 hover:bg-[#0284C7] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+          >
+            <svg x-show="loginLoading" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <span x-text="loginLoading ? '登录中...' : '登录'"></span>
+          </button>
+        </form>
+
+        <p class="text-center text-xs text-[#94A3B8] mt-8">© 2026 乘杜科技</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- MODAL: Change Password -->
+  <!-- ════════════════════════════════════════ -->
+  <div x-show="showChangePw" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" @click.self="showChangePw = false">
+    <div x-show="showChangePw" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+      
+      <div class="bg-[#0F172A] px-6 py-5">
+        <h2 class="text-lg font-semibold text-white">修改初始密码</h2>
+        <p class="text-sm text-[#94A3B8] mt-1">首次登录，请设置新密码</p>
+      </div>
+
+      <form @submit.prevent="submitChangePw" class="p-6 space-y-4">
+        <!-- Current password -->
+        <div>
+          <label class="block text-sm font-medium text-[#334155] mb-1">当前密码</label>
+          <input type="password" x-model="pwForm.current" placeholder="输入当前密码" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] bg-white text-sm focus:border-[#0369A1]" required>
+        </div>
+        <!-- New password -->
+        <div>
+          <label class="block text-sm font-medium text-[#334155] mb-1">新密码</label>
+          <input type="password" x-model="pwForm.newPw" placeholder="8-20位，含字母和数字" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] bg-white text-sm focus:border-[#0369A1]" required>
+          <p class="text-xs text-[#94A3B8] mt-1">8-20 位，需包含字母和数字</p>
+        </div>
+        <!-- Confirm -->
+        <div>
+          <label class="block text-sm font-medium text-[#334155] mb-1">确认新密码</label>
+          <input type="password" x-model="pwForm.confirm" placeholder="再次输入新密码" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] bg-white text-sm focus:border-[#0369A1]" required>
+        </div>
+
+        <!-- Validation error -->
+        <div x-show="pwError" x-transition class="text-red-500 text-sm bg-red-50 px-3 py-2 rounded-lg" x-text="pwError"></div>
+
+        <button type="submit" :disabled="pwLoading" class="w-full h-10 rounded-lg bg-[#0F172A] text-white text-sm font-semibold transition-all duration-200 hover:bg-[#1E293B] active:scale-[0.98] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2">
+          <svg x-show="pwLoading" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          <span x-text="pwLoading ? '修改中...' : '确认修改'"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- PAGE: DASHBOARD -->
+  <!-- ════════════════════════════════════════ -->
+  <div x-show="page === 'dashboard'" x-cloak class="min-h-screen flex">
+    
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex lg:flex-col w-56 bg-white border-r border-[#E2E8F0] shrink-0">
+      <!-- Logo with user dropdown -->
+      <div class="h-14 flex items-center justify-between px-4 border-b border-[#E2E8F0] relative" @click.outside="userMenuOpen = false">
+        <div class="flex items-center gap-2">
+          <div class="size-6 rounded-md bg-[#0F172A] flex items-center justify-center">
+            <svg class="size-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+          </div>
+          <span class="font-semibold text-sm text-[#0F172A] tracking-tight">API 中转平台</span>
+        </div>
+        <!-- Avatar dropdown -->
+        <button @click="userMenuOpen = !userMenuOpen" class="size-7 rounded-full bg-[#0369A1] flex items-center justify-center text-white text-[11px] font-semibold hover:ring-2 ring-[#0369A1]/30 transition-all cursor-pointer">孙</button>
+        <!-- Dropdown menu -->
+        <div x-show="userMenuOpen" x-cloak x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute top-full left-3 right-3 mt-1 bg-white rounded-xl shadow-lg border border-[#E2E8F0] py-1.5 z-50">
+          <div class="px-3 py-2 border-b border-[#F1F5F9]">
+            <div class="text-sm font-medium text-[#0F172A]">孙楠迪</div>
+            <div class="text-xs text-[#64748B]">管理员</div>
+          </div>
+          <button @click="userMenuOpen = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#64748B] hover:bg-[#F8FAFC] transition-colors cursor-pointer">
+            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+            个人资料
+          </button>
+          <button @click="handleLogout" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+            <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+            退出登录
+          </button>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav class="flex-1 p-2.5 space-y-0.5">
+        <template x-for="item in sidebarNav" :key="item.name">
+          <a href="#" @click.prevent="currentNav = item.name" class="sidebar-link flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium" :class="currentNav === item.name ? 'active' : 'text-[#64748B]'">
+            <span x-html="item.icon" class="size-4 shrink-0"></span>
+            <span x-text="item.name"></span>
+          </a>
+        </template>
+      </nav>
+
+      <!-- User bottom -->
+      <div class="p-3 border-t border-[#E2E8F0]">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="size-7 rounded-full bg-[#0369A1] flex items-center justify-center text-white text-[11px] font-semibold">孙</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-[#0F172A] truncate">孙楠迪</div>
+            <div class="text-xs text-[#64748B]">管理员</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile header -->
+    <!-- Mobile header -->
+    <div class="lg:hidden fixed top-0 left-0 right-0 z-30 h-14 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-4">
+      <div class="flex items-center gap-2.5">
+        <button @click="mobileMenu = !mobileMenu" class="text-[#64748B] cursor-pointer">
+          <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <span class="font-semibold text-sm text-[#0F172A]">API 中转平台</span>
+      </div>
+      <!-- Mobile user -->
+      <div class="size-7 rounded-full bg-[#0369A1] flex items-center justify-center text-white text-xs font-semibold">孙</div>
+    </div>
+
+    <!-- Mobile menu overlay -->
+    <div x-show="mobileMenu" x-cloak class="lg:hidden fixed inset-0 z-40" @click.self="mobileMenu = false">
+      <div class="absolute inset-0 bg-black/30" @click="mobileMenu = false"></div>
+      <div class="absolute left-0 top-0 bottom-0 w-60 bg-white shadow-xl p-4">
+        <div class="flex items-center justify-between mb-6">
+          <span class="font-semibold text-sm text-[#0F172A]">API 中转平台</span>
+          <button @click="mobileMenu = false" class="text-[#94A3B8] cursor-pointer">
+            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="space-y-0.5">
+          <template x-for="item in sidebarNav" :key="item.name">
+            <a href="#" @click.prevent="currentNav = item.name; mobileMenu = false" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium" :class="currentNav === item.name ? 'bg-[#0F172A] text-white' : 'text-[#64748B] hover:bg-gray-50'">
+              <span x-html="item.icon" class="size-4 shrink-0"></span>
+              <span x-text="item.name"></span>
+            </a>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="flex-1 min-w-0 lg:pt-0 pt-14">
+      <div class="px-4 md:px-6 lg:px-8 py-6 lg:py-8 max-w-7xl mx-auto">
+
+        <!-- Page header -->
+        <!-- Page header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="text-xl font-semibold text-[#0F172A] tracking-tight">统计看板</h1>
+            <p class="text-sm text-[#64748B] mt-0.5">今日概览与趋势分析</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="hidden md:flex items-center gap-2 text-xs text-[#94A3B8] bg-white px-3 py-1.5 rounded-lg border border-[#E2E8F0]">
+              <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+              <span>2026-05-14（周四）</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Stats Cards ─── -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <!-- Card 1: Calls -->
+          <div class="stat-card bg-white rounded-xl p-4 md:p-5 border border-[#E2E8F0] cursor-pointer">
+            <div class="flex items-center justify-between mb-3">
+              <div class="size-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <svg class="size-4.5 text-[#0369A1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 3 3m-3 3V11"/></svg>
+              </div>
+              <span class="text-xs text-[#10B981] font-medium flex items-center gap-1">
+                <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/></svg>
+                +12.5%
+              </span>
+            </div>
+            <div class="text-2xl font-bold text-[#0F172A] tracking-tight">12,458</div>
+            <div class="text-xs text-[#94A3B8] mt-0.5">今日调用次数</div>
+          </div>
+          <!-- Card 2: Token -->
+          <div class="stat-card bg-white rounded-xl p-4 md:p-5 border border-[#E2E8F0] cursor-pointer">
+            <div class="flex items-center justify-between mb-3">
+              <div class="size-9 rounded-lg bg-purple-50 flex items-center justify-center">
+                <svg class="size-4.5 text-[#7C3AED]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+              </div>
+              <span class="text-xs text-[#10B981] font-medium flex items-center gap-1">
+                <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/></svg>
+                +8.3%
+              </span>
+            </div>
+            <div class="text-2xl font-bold text-[#0F172A] tracking-tight">2.4M</div>
+            <div class="text-xs text-[#94A3B8] mt-0.5">今日 Token 消耗</div>
+          </div>
+          <!-- Card 3: Amount -->
+          <div class="stat-card bg-white rounded-xl p-4 md:p-5 border border-[#E2E8F0] cursor-pointer">
+            <div class="flex items-center justify-between mb-3">
+              <div class="size-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                <svg class="size-4.5 text-[#D97706]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span class="text-xs text-[#EF4444] font-medium flex items-center gap-1">
+                <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                -3.2%
+              </span>
+            </div>
+            <div class="text-2xl font-bold text-[#0F172A] tracking-tight">¥1,280.50</div>
+            <div class="text-xs text-[#94A3B8] mt-0.5">今日金额消耗</div>
+          </div>
+          <!-- Card 4: Active Keys -->
+          <div class="stat-card bg-white rounded-xl p-4 md:p-5 border border-[#E2E8F0] cursor-pointer">
+            <div class="flex items-center justify-between mb-3">
+              <div class="size-9 rounded-lg bg-green-50 flex items-center justify-center">
+                <svg class="size-4.5 text-[#059669]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+              </div>
+              <span class="text-xs text-[#10B981] font-medium flex items-center gap-1">
+                <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/></svg>
+                +5
+              </span>
+            </div>
+            <div class="text-2xl font-bold text-[#0F172A] tracking-tight">86</div>
+            <div class="text-xs text-[#94A3B8] mt-0.5">活跃 Key 数</div>
+          </div>
+        </div>
+
+        <!-- ─── Thinking Row (V2.2) ─── -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-card bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-xl p-4 md:p-5 cursor-pointer">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="size-4 text-[#60A5FA]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+              <span class="text-xs text-[#94A3B8]">Thinking Token</span>
+            </div>
+            <div class="text-xl font-bold text-white tracking-tight">386.2K</div>
+            <div class="text-xs text-[#64748B] mt-0.5">今日 Thinking 消耗</div>
+          </div>
+          <div class="stat-card bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-xl p-4 md:p-5 cursor-pointer">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="size-4 text-[#60A5FA]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33"/></svg>
+              <span class="text-xs text-[#94A3B8]">Thinking 金额</span>
+            </div>
+            <div class="text-xl font-bold text-white tracking-tight">¥0.77</div>
+            <div class="text-xs text-[#64748B] mt-0.5">今日 Thinking 金额消耗</div>
+          </div>
+          <div class="stat-card bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-xl p-4 md:p-5 cursor-pointer">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="size-4 text-[#60A5FA]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+              <span class="text-xs text-[#94A3B8]">Thinking 占比</span>
+            </div>
+            <div class="text-xl font-bold text-white tracking-tight">8.2%</div>
+            <div class="text-xs text-[#64748B] mt-0.5">总消耗占比</div>
+          </div>
+        </div>
+
+        <!-- ─── Chart + Quick Actions ─── -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Chart -->
+          <div class="lg:col-span-2 bg-white rounded-xl p-5 border border-[#E2E8F0]">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-sm font-semibold text-[#0F172A]">消耗趋势</h3>
+              <div class="flex items-center gap-1.5">
+                <template x-for="range in ['近7天', '近30天']" :key="range">
+                  <button 
+                    @click="chartRange = range" 
+                    class="px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer"
+                    :class="chartRange === range ? 'bg-[#0F172A] text-white' : 'text-[#64748B] hover:bg-gray-100'"
+                    x-text="range"
+                  ></button>
+                </template>
+              </div>
+            </div>
+
+            <!-- Chart area -->
+            <div class="h-52 md:h-60 relative">
+              <!-- Y axis labels -->
+              <div class="absolute left-0 top-0 bottom-6 w-10 flex flex-col justify-between text-xs text-[#94A3B8]">
+                <span>¥2K</span>
+                <span>¥1.5K</span>
+                <span>¥1K</span>
+                <span>¥0.5K</span>
+                <span>0</span>
+              </div>
+              <!-- Chart bars -->
+              <div class="ml-12 h-full flex items-end gap-1.5 relative">
+                <!-- Grid lines -->
+                <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                  <div class="border-t border-[#F1F5F9]"></div>
+                  <div class="border-t border-[#F1F5F9]"></div>
+                  <div class="border-t border-[#F1F5F9]"></div>
+                  <div class="border-t border-[#F1F5F9]"></div>
+                  <div class="border-t border-[#F1F5F9]"></div>
+                </div>
+                <!-- Bars -->
+                <template x-for="(d, i) in chartData" :key="i">
+                  <div class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer">
+                    <!-- Bar amount -->
+                    <div class="w-full max-w-[32px] bg-[#0369A1] rounded-t-sm chart-bar" :style="'height: ' + d.amountPct + '%'"></div>
+                    <!-- Thinking overlay -->
+                    <div class="absolute w-full max-w-[32px] bg-[#60A5FA] rounded-t-sm chart-bar opacity-60" :style="'height: ' + d.thinkPct + '%; bottom: ' + d.amountPct + '%'"></div>
+                    <!-- Tooltip on hover -->
+                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#0F172A] text-white text-xs px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                      <span x-text="d.label + ' - ¥' + d.amount.toFixed(0)"></span>
+                    </div>
+                    <!-- X label -->
+                    <span class="text-[10px] text-[#94A3B8] mt-1.5" x-text="d.label.slice(5)"></span>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <!-- Legend -->
+            <div class="flex items-center gap-4 mt-4 text-xs text-[#64748B]">
+              <div class="flex items-center gap-1.5">
+                <span class="size-2.5 rounded-sm bg-[#0369A1]"></span>
+                <span>消耗金额</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="size-2.5 rounded-sm bg-[#60A5FA] opacity-60"></span>
+                <span>其中 Thinking</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-xl p-5 border border-[#E2E8F0]">
+            <h3 class="text-sm font-semibold text-[#0F172A] mb-4">快速操作</h3>
+            <div class="space-y-3">
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-[#F8FAFC] hover:bg-[#F1F5F9] transition-colors border border-[#E2E8F0] text-left group cursor-pointer">
+                <div class="size-9 rounded-lg bg-[#0369A1]/10 flex items-center justify-center group-hover:bg-[#0369A1]/20 transition-colors">
+                  <svg class="size-4.5 text-[#0369A1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-[#0F172A]">生成新 Key</div>
+                  <div class="text-xs text-[#94A3B8]">快速创建 API 凭证</div>
+                </div>
+                <svg class="size-4 text-[#94A3B8] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+              </button>
+              <button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-[#F8FAFC] hover:bg-[#F1F5F9] transition-colors border border-[#E2E8F0] text-left group cursor-pointer">
+                <div class="size-9 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center group-hover:bg-[#7C3AED]/20 transition-colors">
+                  <svg class="size-4.5 text-[#7C3AED]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z"/></svg>
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-[#0F172A]">查看客户报表</div>
+                  <div class="text-xs text-[#94A3B8]">用量与 Thinking 占比</div>
+                </div>
+                <svg class="size-4 text-[#94A3B8] ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+              </button>
+
+              <!-- Thinking mode hint -->
+              <div class="mt-4 pt-4 border-t border-[#E2E8F0]">
+                <div class="flex items-center gap-2 text-xs text-[#64748B]">
+                  <svg class="size-3.5 text-[#0369A1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+                  <span>Thinking 模式已接入</span>
+                  <span class="bg-[#0369A1]/10 text-[#0369A1] px-1.5 py-0.5 rounded text-[10px] font-medium">V2.2</span>
+                </div>
+                <p class="text-xs text-[#94A3B8] mt-1">客户端传参自动控制，按输出Token单价计费</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Recent Activity ─── -->
+        <div class="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden">
+          <div class="px-5 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-[#0F172A]">最近操作</h3>
+            <a href="#" class="text-xs text-[#0369A1] hover:underline cursor-pointer">查看全部</a>
+          </div>
+          <div class="divide-y divide-[#F1F5F9]">
+            <template x-for="(act, i) in recentActivity" :key="i">
+              <div class="px-5 py-3 flex items-center gap-3 hover:bg-[#F8FAFC] transition-colors">
+                <div class="size-7 rounded-full flex items-center justify-center text-xs font-medium" :class="act.bg + ' ' + act.color" x-text="act.initials"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-[#0F172A]" x-html="act.text"></div>
+                  <div class="text-xs text-[#94A3B8] mt-0.5" x-text="act.time"></div>
+                </div>
+                <span class="text-xs text-[#94A3B8] shrink-0" x-text="act.tag"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-xs text-[#94A3B8] mt-8 pb-4">© 2026 乘杜科技 · API 中转平台</p>
+      </div>
+    </main>
+  </div>
+
+</div>
+
+<script>
+function app() {
+  return {
+    // ─── Page state ───
+    page: 'login',
+    mobileMenu: false,
+
+    // ─── Login ───
+    loginForm: { email: '', password: '', showPw: false },
+    loginLoading: false,
+    loginError: '',
+
+    // ─── Change Password ───
+    showChangePw: false,
+    pwForm: { current: '', newPw: '', confirm: '' },
+    pwLoading: false,
+    pwError: '',
+
+    // ─── Dashboard ───
+    currentNav: '统计看板',
+    userMenuOpen: false,
+    chartRange: '近7天',
+
+    sidebarNav: [
+      { name: '统计看板', icon: '<svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z"/></svg>' },
+      { name: 'Key 管理', icon: '<svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>' },
+      { name: '客户库', icon: '<svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>' },
+      { name: '员工管理', icon: '<svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>' },
+      { name: '系统设置', icon: '<svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' },
+    ],
+
+    chartData: [
+      { label: '2026-05-08', amount: 980, think: 62, amountPct: 49, thinkPct: 3 },
+      { label: '2026-05-09', amount: 1170, think: 78, amountPct: 58.5, thinkPct: 4 },
+      { label: '2026-05-10', amount: 850, think: 35, amountPct: 42.5, thinkPct: 2 },
+      { label: '2026-05-11', amount: 1340, think: 95, amountPct: 67, thinkPct: 5 },
+      { label: '2026-05-12', amount: 1050, think: 55, amountPct: 52.5, thinkPct: 3 },
+      { label: '2026-05-13', amount: 1520, think: 132, amountPct: 76, thinkPct: 7 },
+      { label: '2026-05-14', amount: 1280, think: 112, amountPct: 64, thinkPct: 6 },
+    ],
+
+    recentActivity: [
+      { initials: '张', bg: 'bg-blue-100', color: 'text-blue-600', text: '<strong>张工</strong> 生成了 <strong>50</strong> 个测试 Key，归属客户 <strong>明远科技</strong>', time: '14:32:18', tag: '批量生成' },
+      { initials: '李', bg: 'bg-amber-100', color: 'text-amber-600', text: '<strong>李工</strong> 停用了 Key <code class="text-xs bg-gray-100 px-1 rounded">sk-...a3f2</code>，客户 <strong>恒通数据</strong>', time: '13:55:41', tag: '停用' },
+      { initials: '孙', bg: 'bg-green-100', color: 'text-green-600', text: '<strong>孙楠迪</strong> 新增客户 <strong>云智科技</strong> 至客户库', time: '11:20:05', tag: '新增' },
+      { initials: '张', bg: 'bg-blue-100', color: 'text-blue-600', text: '<strong>张工</strong> 生成了 1 个永久 Key，归属客户 <strong>富士康精密</strong>', time: '10:08:33', tag: '新建' },
+      { initials: '王', bg: 'bg-purple-100', color: 'text-purple-600', text: '<strong>王工</strong> 编辑了系统参数「测试Key默认额度」为 ¥2.00', time: '09:15:22', tag: '设置' },
+    ],
+
+    // ─── Methods ───
+    handleLogin() {
+      this.loginError = '';
+      this.loginLoading = true;
+      // Simulate login
+      setTimeout(() => {
+        this.loginLoading = false;
+        // Always show change password for demo
+        this.showChangePw = true;
+      }, 1200);
+    },
+
+    submitChangePw() {
+      this.pwError = '';
+      
+      if (!this.pwForm.current || !this.pwForm.newPw || !this.pwForm.confirm) {
+        this.pwError = '请填写所有字段';
+        return;
+      }
+      if (this.pwForm.newPw.length < 8 || this.pwForm.newPw.length > 20) {
+        this.pwError = '密码长度需为 8-20 位';
+        return;
+      }
+      if (!/[a-zA-Z]/.test(this.pwForm.newPw) || !/[0-9]/.test(this.pwForm.newPw)) {
+        this.pwError = '密码需包含字母和数字';
+        return;
+      }
+      if (this.pwForm.newPw !== this.pwForm.confirm) {
+        this.pwError = '两次输入的密码不一致';
+        return;
+      }
+
+      this.pwLoading = true;
+      setTimeout(() => {
+        this.pwLoading = false;
+        this.showChangePw = false;
+        this.page = 'dashboard';
+      }, 800);
+    },
+
+    handleLogout() {
+      this.userMenuOpen = false;
+      this.mobileMenu = false;
+      this.page = 'login';
+      this.loginForm = { email: '', password: '', showPw: false };
+      this.pwForm = { current: '', newPw: '', confirm: '' };
+      this.pwError = '';
+      this.showChangePw = false;
+      this.loginError = '';
+      this.currentNav = '统计看板';
+    }
+  }
+}
+</script>
+</body>
+</html>
